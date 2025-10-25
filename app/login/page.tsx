@@ -13,21 +13,20 @@ export default function LoginPage() {
       ></div>
 
       {/* Right Column - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white relative z-10 overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white relative overflow-hidden">
         {/* Mobile background image with reduced opacity, only for right column */}
-        <div className="absolute inset-0 block lg:hidden z-0">
+        <div className="absolute inset-0 block lg:hidden z-0 pointer-events-none">
           <img
             src="/healing-image.jpg"
             alt="Healing event"
             className="w-full h-full object-cover opacity-10"
           />
         </div>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md relative z-10">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
             <p className="text-gray-600">oiphd modules access</p>
           </div>
-
           <form className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
