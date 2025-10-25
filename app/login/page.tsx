@@ -5,19 +5,27 @@ import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex">
-      {/* Left Column - Image */}
+    <div className="min-h-screen flex relative">
+      {/* Left Column - Image (desktop only) */}
       <div
-        className="hidden lg:flex lg:w-1/2 items-center justify-center p-8 bg-cover  bg-center"
+        className="hidden lg:flex lg:w-1/2 items-center justify-center p-8 bg-cover bg-center"
         style={{ backgroundImage: "url('/healing-image.jpg')" }}
       ></div>
 
       {/* Right Column - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white relative z-10 overflow-hidden">
+        {/* Mobile background image with reduced opacity, only for right column */}
+        <div className="absolute inset-0 block lg:hidden z-0">
+          <img
+            src="/healing-image.jpg"
+            alt="Healing event"
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
         <div className="w-full max-w-md">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
-            <p className="text-gray-600">Access your wellness journey</p>
+            <p className="text-gray-600">oiphd modules access</p>
           </div>
 
           <form className="space-y-6">
@@ -53,7 +61,7 @@ export default function LoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-black/80 hover:text-blue-700 font-medium"
               >
                 Forgot password?
               </Link>
@@ -62,7 +70,7 @@ export default function LoginPage() {
             {/* Sign In Button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-sm transition-colors"
             >
               Sign In
             </Button>
