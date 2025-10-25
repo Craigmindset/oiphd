@@ -1,0 +1,70 @@
+"use client"
+
+import { Bell, User, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+export function Header() {
+  return (
+    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <h2 className="text-xl font-semibold text-gray-900">Welcome back, John</h2>
+
+      <div className="flex items-center gap-4">
+        {/* Progress Indicator */}
+        <div className="hidden sm:flex items-center gap-2">
+          <div className="text-right">
+            <p className="text-sm font-medium text-gray-900">Progress</p>
+            <p className="text-xs text-gray-500">30% Complete</p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <span className="text-sm font-bold text-blue-600">30%</span>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="w-5 h-5 text-gray-600" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </Button>
+
+        {/* Invite */}
+        <Button variant="outline" size="sm" className="hidden sm:flex gap-2 bg-transparent">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Invite
+        </Button>
+
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" />
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem>
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-600">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
+  )
+}
