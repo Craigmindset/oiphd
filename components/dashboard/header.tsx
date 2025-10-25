@@ -1,30 +1,73 @@
-"use client"
+"use client";
 
-import { Bell, User, LogOut } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Bell, User, LogOut, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useModuleProgress } from "@/hooks/use-module-progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+} from "@/components/ui/drawer";
+import { Sidebar } from "@/components/dashboard/sidebar";
 
-export function Header() {
+interface HeaderProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+export function Header({ activeTab, setActiveTab }: HeaderProps) {
+  const { getProgress } = useModuleProgress();
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-gray-900">Welcome back, John</h2>
+      {/* Mobile Burger Menu */}
+      <div className="md:hidden flex items-center">
+        <Drawer direction="left">
+          <DrawerTrigger asChild>
+            <button className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <Menu className="w-7 h-7 text-gray-900" />
+            </button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[70vw] max-w-xs p-0">
+            <DrawerClose id="drawer-close-button" className="hidden" />
+            <Sidebar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              inDrawer
+              onNavigate={() => {
+                // Find and click the hidden close button
+                document.getElementById("drawer-close-button")?.click();
+              }}
+            />
+          </DrawerContent>
+        </Drawer>
+      </div>
+
+      <h2 className="text-xs md:text-2xl font-semibold text-gray-900">
+        Hello, John
+      </h2>
 
       <div className="flex items-center gap-4">
         {/* Progress Indicator */}
         <div className="hidden sm:flex items-center gap-2">
           <div className="text-right">
             <p className="text-sm font-medium text-gray-900">Progress</p>
-            <p className="text-xs text-gray-500">30% Complete</p>
+            <p className="text-xs text-gray-500">{getProgress()}% Complete</p>
           </div>
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-sm font-bold text-blue-600">30%</span>
+            <span className="text-sm font-bold text-blue-600">
+              {getProgress()}%
+            </span>
           </div>
         </div>
 
@@ -35,9 +78,23 @@ export function Header() {
         </Button>
 
         {/* Invite */}
-        <Button variant="outline" size="sm" className="hidden sm:flex gap-2 bg-transparent">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden sm:flex gap-2 bg-transparent"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Invite
         </Button>
@@ -66,5 +123,5 @@ export function Header() {
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }

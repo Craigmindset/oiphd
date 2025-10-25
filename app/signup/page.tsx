@@ -16,6 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Select from "react-select";
+import countries from "world-countries";
+import { supabase } from "@/lib/supabaseClient";
+
+const countryOptions = countries.map((country) => ({
+  value: country.cca2,
+  label: country.name.common,
+}));
 
 export default function SignupPage() {
   const [currentStep, setCurrentStep] = useState<"question" | 1 | 2 | 3 | 4>(
@@ -38,10 +46,13 @@ export default function SignupPage() {
     healthImage: null as File | null,
     password: "",
     confirmPassword: "",
+    status: "pending",
+    registeringForSomeone: null as boolean | null,
   });
 
   const handleQuestionAnswer = (answer: boolean) => {
     setRegisteringForSomeone(answer);
+    setFormData((prev) => ({ ...prev, registeringForSomeone: answer }));
     if (answer) {
       setShowModal(true);
     } else {
@@ -81,10 +92,56 @@ export default function SignupPage() {
     else if (currentStep === 4) setCurrentStep(3);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSignup = async () => {
+    // 1. Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (authError) {
+      // handle error (show message)
+      return;
+    }
+
+    // 2. Insert profile data (after successful signup)
+    const user = authData.user;
+    if (user) {
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .insert([
+          {
+            id: user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            gender: formData.gender,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            country: formData.country,
+            occupation: formData.occupation,
+            expectations: formData.expectations,
+            status: formData.status,
+            registering_for_someone:
+              formData.registeringForSomeone === true
+                ? "yes"
+                : formData.registeringForSomeone === false
+                ? "no"
+                : null,
+            // health_image_url: ... (handle upload separately if needed)
+          },
+        ]);
+      if (profileError) {
+        // handle error (show message)
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    // Handle registration submission
+
+    handleSignup();
   };
 
   const getProgressPercentage = () => {
@@ -92,9 +149,40 @@ export default function SignupPage() {
     return ((currentStep as number) / 4) * 100;
   };
 
+  // Validation for each step
+  const isStepValid = () => {
+    if (currentStep === 1) {
+      return (
+        formData.firstName.trim() !== "" &&
+        formData.lastName.trim() !== "" &&
+        formData.gender.trim() !== "" &&
+        formData.email.trim() !== "" &&
+        formData.phone.trim() !== ""
+      );
+    }
+    if (currentStep === 2) {
+      return (
+        formData.address.trim() !== "" &&
+        formData.country.trim() !== "" &&
+        formData.occupation.trim() !== ""
+      );
+    }
+    if (currentStep === 3) {
+      return formData.expectations.trim() !== "";
+    }
+    if (currentStep === 4) {
+      return (
+        formData.password.trim() !== "" &&
+        formData.confirmPassword.trim() !== "" &&
+        formData.password === formData.confirmPassword
+      );
+    }
+    return false;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen flex items-center justify-center bg-blue-50">
+      <div className="w-full max-w-7xl min-h-[540px] flex flex-col justify-center bg-white rounded-xl shadow-lg p-8">
         {/* Progress Bar */}
         {currentStep !== "question" && (
           <div className="mb-8">
@@ -144,13 +232,13 @@ export default function SignupPage() {
                 }`}
               >
                 {/* Icon */}
-                <div className="w-20 h-20 bg-gradient-to-b from-blue-700 to-blue-500 rounded-xl flex items-center justify-center mb-6">
+                <div className="w-12 h-12 md:w-20 md:h-20 bg-gradient-to-b from-blue-700 to-blue-500 rounded-xl flex items-center justify-center mb-4 md:mb-6">
                   <Image
                     src="/users-svgrepo-com.svg"
                     alt="Users icon"
-                    width={40}
-                    height={40}
-                    className="text-white"
+                    width={28}
+                    height={28}
+                    className="text-white mx-auto block md:w-10 md:h-10 w-7 h-7"
                   />
                 </div>
 
@@ -172,13 +260,13 @@ export default function SignupPage() {
                 }`}
               >
                 {/* Icon */}
-                <div className="w-20 h-20 bg-gradient-to-b from-blue-700 to-blue-500 rounded-xl flex items-center justify-center mb-6">
+                <div className="w-12 h-12 md:w-20 md:h-20 bg-gradient-to-b from-blue-700 to-blue-500 rounded-xl flex items-center justify-center mb-4 md:mb-6">
                   <Image
                     src="/single-user.svg"
                     alt="Users icon"
-                    width={40}
-                    height={40}
-                    className="text-white"
+                    width={28}
+                    height={28}
+                    className="text-white mx-auto block md:w-10 md:h-10 w-7 h-7"
                   />
                 </div>
 
@@ -205,7 +293,7 @@ export default function SignupPage() {
                   {/* Step 1 */}
                   {currentStep === 1 && (
                     <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
                         Personal Information
                       </h2>
                       <div className="grid grid-cols-2 gap-4">
@@ -283,7 +371,7 @@ export default function SignupPage() {
                   {/* Step 2 */}
                   {currentStep === 2 && (
                     <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
                         Address & Occupation
                       </h2>
                       <div className="space-y-2">
@@ -295,26 +383,40 @@ export default function SignupPage() {
                           onChange={handleInputChange}
                           placeholder="123 Main Street"
                           required
+                          className="w-full max-w-full px-5"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="country">Country</Label>
-                        <select
+                        <Select
                           id="country"
                           name="country"
-                          value={formData.country}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          required
-                        >
-                          <option value="">Select a country</option>
-                          <option value="US">United States</option>
-                          <option value="UK">United Kingdom</option>
-                          <option value="CA">Canada</option>
-                          <option value="AU">Australia</option>
-                          <option value="NG">Nigeria</option>
-                          {/* Add more countries as needed */}
-                        </select>
+                          options={countryOptions}
+                          value={
+                            countryOptions.find(
+                              (option) => option.value === formData.country
+                            ) || null
+                          }
+                          onChange={(option) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              country: option ? option.value : "",
+                            }))
+                          }
+                          placeholder="Select a country"
+                          isClearable
+                          classNamePrefix="react-select"
+                          styles={{
+                            control: (base) => ({
+                              ...base,
+                              minWidth: "100%",
+                              width: "100%",
+                              paddingLeft: 8,
+                              paddingRight: 8,
+                            }),
+                            menu: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Occupation</Label>
@@ -374,10 +476,10 @@ export default function SignupPage() {
                   {/* Step 3 */}
                   {currentStep === 3 && (
                     <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
                         Your Expectations
                       </h2>
-                      <div className="space-y-2">
+                      <div className="space-y-4 mb-10">
                         <Label>What are your expectations?</Label>
                         <RadioGroup
                           value={formData.expectations}
@@ -429,7 +531,7 @@ export default function SignupPage() {
                           </div>
                         </RadioGroup>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 ">
                         <Label htmlFor="healthImage">
                           Upload Health/Medical Documents (Optional)
                         </Label>
@@ -447,7 +549,7 @@ export default function SignupPage() {
                   {/* Step 4 */}
                   {currentStep === 4 && (
                     <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
                         Create Password
                       </h2>
                       <div className="space-y-2">
@@ -495,7 +597,8 @@ export default function SignupPage() {
                       <Button
                         type="button"
                         onClick={handleNext}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        disabled={!isStepValid()}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                       >
                         Next
                       </Button>
@@ -509,19 +612,6 @@ export default function SignupPage() {
                     )}
                   </div>
                 </form>
-
-                {/* Sign In Link */}
-                <div className="mt-6 text-center">
-                  <p className="text-gray-600">
-                    Already have an account?{" "}
-                    <Link
-                      href="/login"
-                      className="text-blue-600 hover:text-blue-700 font-semibold"
-                    >
-                      Sign in
-                    </Link>
-                  </p>
-                </div>
               </div>
 
               {/* Right - Image */}

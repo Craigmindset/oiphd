@@ -6,6 +6,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+  experimental: {
+    turbo: {
+      rules: {
+        // Configure any Turbopack-specific rules here
+      },
+    },
+  },
+};
 
-export default nextConfig
+export default nextConfig;

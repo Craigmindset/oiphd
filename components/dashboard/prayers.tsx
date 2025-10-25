@@ -4,7 +4,7 @@ import { Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export function Module2() {
+export function Prayers() {
   const audioItems = [
     { title: "Guided Meditation", duration: "12:34" },
     { title: "Breathing Exercises", duration: "8:45" },
@@ -16,7 +16,7 @@ export function Module2() {
 
   return (
     <div>
-      <h1 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
         Module 2: Audio Sessions
       </h1>
       <div className="space-y-4">
