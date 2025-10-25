@@ -131,7 +131,7 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-3xl font-extrabold text-gray-900 mb-3">
+            <h1 className="text-3xl md:text-3xl font-extrabold text-gray-900 mb-3">
               Are you registering for someone?
             </h1>
 
