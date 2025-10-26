@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,6 +18,8 @@ import {
 import Select from "react-select";
 import countries from "world-countries";
 import { supabase } from "@/lib/supabaseClient";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const countryOptions = countries.map((country) => ({
   value: country.cca2,
@@ -26,6 +27,7 @@ const countryOptions = countries.map((country) => ({
 }));
 
 export default function SignupPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<"question" | 1 | 2 | 3 | 4>(
     "question"
   );
@@ -49,6 +51,11 @@ export default function SignupPage() {
     status: "pending",
     registeringForSomeone: null as boolean | null,
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleQuestionAnswer = (answer: boolean) => {
     setRegisteringForSomeone(answer);
@@ -93,6 +100,9 @@ export default function SignupPage() {
   };
 
   const handleSignup = async () => {
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     // 1. Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: formData.email,
@@ -100,8 +110,9 @@ export default function SignupPage() {
     });
 
     if (authError) {
-      // handle error (show message)
-      return;
+      setErrorMessage(authError.message || "Signup failed. Please try again.");
+      setIsSubmitting(false);
+      return false;
     }
 
     // 2. Insert profile data (after successful signup)
@@ -132,16 +143,34 @@ export default function SignupPage() {
           },
         ]);
       if (profileError) {
-        // handle error (show message)
+        setErrorMessage(
+          profileError.message || "Profile save failed. Please try again."
+        );
+        setIsSubmitting(false);
+        return false;
       }
+      setSuccessMessage("Registration successful! Redirecting to login...");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+      setIsSubmitting(false);
+      return true;
     }
+    setErrorMessage("Signup failed. Please try again.");
+    setIsSubmitting(false);
+    return false;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-
-    handleSignup();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
+    const result = await handleSignup();
+    setIsSubmitting(false);
+    if (!result) {
+      // Optionally scroll to error or focus
+    }
   };
 
   const getProgressPercentage = () => {
@@ -172,12 +201,20 @@ export default function SignupPage() {
     }
     if (currentStep === 4) {
       return (
-        formData.password.trim() !== "" &&
-        formData.confirmPassword.trim() !== "" &&
+        formData.password.trim().length >= 6 &&
+        formData.password.trim().length <= 15 &&
+        formData.confirmPassword.trim().length >= 6 &&
+        formData.confirmPassword.trim().length <= 15 &&
         formData.password === formData.confirmPassword
       );
     }
     return false;
+  };
+
+  // Only allow numeric input for phone
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, phone: numericValue }));
   };
 
   return (
@@ -359,9 +396,12 @@ export default function SignupPage() {
                         <Input
                           id="phone"
                           name="phone"
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder="+1 (555) 000-0000"
+                          onChange={handlePhoneChange}
+                          placeholder="Enter phone number"
                           required
                         />
                       </div>
@@ -381,7 +421,7 @@ export default function SignupPage() {
                           name="address"
                           value={formData.address}
                           onChange={handleInputChange}
-                          placeholder="123 Main Street"
+                          placeholder="Your address"
                           required
                           className="w-full max-w-full px-5"
                         />
@@ -554,41 +594,72 @@ export default function SignupPage() {
                       </h2>
                       <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          name="password"
-                          type="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="••••••••"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            placeholder="password must be over 5 characters"
+                            required
+                            minLength={6}
+                            maxLength={15}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                            tabIndex={-1}
+                            onClick={() => setShowPassword((v) => !v)}
+                          >
+                            {showPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="confirmPassword">
                           Confirm Password
                         </Label>
-                        <Input
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          type="password"
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          placeholder="••••••••"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={formData.confirmPassword}
+                            onChange={handleInputChange}
+                            placeholder="Confirm password"
+                            required
+                            minLength={6}
+                            maxLength={15}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                            tabIndex={-1}
+                            onClick={() => setShowConfirmPassword((v) => !v)}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
 
                   {/* Navigation Buttons */}
-                  <div className="flex gap-4 pt-6">
+                  <div className="flex gap-4 mt-4">
                     {currentStep > 1 && (
                       <Button
                         type="button"
                         onClick={handlePrevious}
-                        variant="outline"
-                        className="flex-1 bg-transparent"
+                        className="flex-1 bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100"
                       >
                         Previous
                       </Button>
@@ -598,19 +669,69 @@ export default function SignupPage() {
                         type="button"
                         onClick={handleNext}
                         disabled={!isStepValid()}
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next
                       </Button>
                     ) : (
                       <Button
                         type="submit"
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        className={`flex-1 ${
+                          isSubmitting
+                            ? "bg-green-600"
+                            : "bg-blue-600 hover:bg-blue-700"
+                        } text-white py-2 px-4 rounded-lg flex items-center justify-center`}
+                        disabled={
+                          isSubmitting ||
+                          !(
+                            formData.password.trim().length >= 6 &&
+                            formData.password.trim().length <= 15 &&
+                            formData.confirmPassword.trim().length >= 6 &&
+                            formData.confirmPassword.trim().length <= 15 &&
+                            formData.password === formData.confirmPassword
+                          )
+                        }
                       >
-                        Complete Registration
+                        {isSubmitting && (
+                          <svg
+                            className="animate-spin h-5 w-5 mr-2 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                        )}
+                        {isSubmitting
+                          ? "Registering..."
+                          : "Complete Registration"}
                       </Button>
                     )}
                   </div>
+
+                  {/* Error/Success Message */}
+                  {errorMessage && (
+                    <div className="mb-4 p-3 rounded bg-red-100 text-red-800 text-center font-semibold">
+                      {errorMessage}
+                    </div>
+                  )}
+                  {successMessage && (
+                    <div className="mb-4 p-3 rounded bg-green-100 text-green-800 text-center font-semibold">
+                      {successMessage}
+                    </div>
+                  )}
                 </form>
               </div>
 
