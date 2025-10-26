@@ -1,6 +1,8 @@
 "use client";
 
 import { Bell, User, LogOut, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useModuleProgress } from "@/hooks/use-module-progress";
@@ -28,6 +30,35 @@ interface HeaderProps {
 
 export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const { getProgress } = useModuleProgress();
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchFirstName() {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        setFirstName(null);
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("first_name")
+        .eq("id", user.id)
+        .single();
+      if (!error && data && data.first_name) {
+        setFirstName(data.first_name);
+      } else {
+        setFirstName(null);
+      }
+      setLoading(false);
+    }
+    fetchFirstName();
+  }, []);
+
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
       {/* Mobile Burger Menu */}
@@ -54,7 +85,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
       </div>
 
       <h2 className="text-xs md:text-2xl font-semibold text-gray-900">
-        Hello, John
+        {loading ? "Hello..." : `Hello, ${firstName ? firstName : "User"}`}
       </h2>
 
       <div className="flex items-center gap-4">

@@ -25,13 +25,15 @@ export default function LoginPage() {
     setLoading(true);
     const form = e.currentTarget;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
     try {
       // Authenticate with Supabase
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
       if (signInError || !data.user) {
         setError("Invalid credentials");
         setLoading(false);
@@ -40,13 +42,36 @@ export default function LoginPage() {
 
       // Fetch user profile to get role
       const { data: profile, error: profileError } = await supabase
-        .from("profiles")
+        .from("user_profiles")
         .select("role")
         .eq("id", data.user.id)
         .single();
 
       if (profileError) {
-        setError("Could not fetch user profile");
+        console.error("Profile fetch error:", profileError);
+        // If profile doesn't exist, create one with default role
+        if (profileError.code === "PGRST116") {
+          const { error: insertError } = await supabase
+            .from("user_profiles")
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              role: "user",
+            });
+
+          if (insertError) {
+            console.error("Profile creation error:", insertError);
+            setError("Could not create user profile");
+            setLoading(false);
+            return;
+          }
+
+          // Redirect to dashboard for new users
+          router.push("/dashboard");
+          return;
+        }
+
+        setError(`Could not fetch user profile: ${profileError.message}`);
         setLoading(false);
         return;
       }
