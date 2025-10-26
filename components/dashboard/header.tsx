@@ -2,6 +2,7 @@
 
 import { Bell, User, LogOut, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,6 +33,12 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const { getProgress } = useModuleProgress();
   const [firstName, setFirstName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  // Logout handler
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   useEffect(() => {
     async function fetchFirstName() {
@@ -146,7 +153,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
+            <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </DropdownMenuItem>
