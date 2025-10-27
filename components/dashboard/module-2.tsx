@@ -86,8 +86,14 @@ export function Module2() {
             return next;
           });
         };
+        const handleEnded = () => {
+          setPlaybackStates((prev) =>
+            prev.map((s, i) => (i === idx ? "idle" : s))
+          );
+        };
         audio.addEventListener("loadedmetadata", handleLoadedMetadata);
         audio.addEventListener("timeupdate", handleTimeUpdate);
+        audio.addEventListener("ended", handleEnded);
         // If already loaded
         if (!isNaN(audio.duration) && audio.duration > 0) {
           setDurations((prev) => {
@@ -100,6 +106,7 @@ export function Module2() {
         return () => {
           audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
           audio.removeEventListener("timeupdate", handleTimeUpdate);
+          audio.removeEventListener("ended", handleEnded);
         };
       }
     });
