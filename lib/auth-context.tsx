@@ -1,16 +1,14 @@
 "use client"
 
-
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
-import { supabase } from "@/lib/supabaseClient";
 
 interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role?: "user" | "admin";
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  role: "user" | "admin"
 }
 
 interface AuthContextType {
@@ -28,105 +26,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Check if user is logged in on mount using Supabase session
+  // Check if user is logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Fetch user profile from user_profiles table
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("id, email, first_name, last_name, role")
-          .eq("id", session.user.id)
-          .single();
-        setUser({
-          id: session.user.id,
-          email: session.user.email ?? "",
-          firstName: profile?.first_name,
-          lastName: profile?.last_name,
-          role: profile?.role ?? "user",
-        });
-      } else {
-        setUser(null);
+      try {
+        const response = await fetch("/api/auth/me")
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false);
-    };
-    checkAuth();
-    // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      checkAuth();
-    });
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+    }
+
+    checkAuth()
+  }, [])
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error || !data.user) {
-        throw new Error("Login failed");
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Login failed")
       }
-      // Fetch user profile
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("id, email, first_name, last_name, role")
-        .eq("id", data.user.id)
-        .single();
-      setUser({
-        id: data.user.id,
-        email: data.user.email ?? "",
-        firstName: profile?.first_name,
-        lastName: profile?.last_name,
-        role: profile?.role ?? "user",
-      });
+
+      const userData = await response.json()
+      setUser(userData)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const signup = async (data: any) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const { data: signUpData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: { data: { first_name: data.firstName, last_name: data.lastName } },
-      });
-      if (error || !signUpData.user) {
-        throw new Error("Signup failed");
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error("Signup failed")
       }
-      // Insert user profile
-      await supabase.from("user_profiles").insert({
-        id: signUpData.user.id,
-        email: data.email,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        role: "user",
-      });
-      setUser({
-        id: signUpData.user.id,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: "user",
-      });
+
+      const userData = await response.json()
+      setUser(userData)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const logout = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await supabase.auth.signOut();
-      setUser(null);
+      await fetch("/api/auth/logout", { method: "POST" })
+      setUser(null)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <AuthContext.Provider

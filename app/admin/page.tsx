@@ -1,13 +1,28 @@
-"use client"
+"use client";
+import { useState, useEffect } from "react";
+import { AdminSidebar } from "@/components/admin/sidebar";
+import { AdminHeader } from "@/components/admin/header";
+import { UserManagementTable } from "@/components/admin/user-management-table";
 
-import { useState } from "react"
-import { AdminSidebar } from "@/components/admin/sidebar"
-import { AdminHeader } from "@/components/admin/header"
-import { UserManagementTable } from "@/components/admin/user-management-table"
-import { AdminFooter } from "@/components/admin/footer"
+import Module1 from "@/components/admin/module1";
+import Module2 from "@/components/admin/module2";
+import Module3 from "@/components/admin/module3";
+import Prayers from "@/components/admin/prayers";
+import { Overview } from "@/components/admin/overview";
+import Module1Admin from "@/components/admin/create_content";
+import { AdminFooter } from "@/components/admin/footer";
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState("users")
+  const [activeTab, setActiveTab] = useState("users");
+
+  // Listen for setAdminTab event to switch tabs after publishing
+  useEffect(() => {
+    function handleSetTab(e) {
+      if (e.detail) setActiveTab(e.detail);
+    }
+    window.addEventListener("setAdminTab", handleSetTab);
+    return () => window.removeEventListener("setAdminTab", handleSetTab);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -15,14 +30,23 @@ export default function AdminDashboardPage() {
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
         <AdminHeader />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 min-h-0 overflow-auto">
           <div className="p-6 sm:p-8">
             {activeTab === "users" && <UserManagementTable />}
+            {activeTab === "overview" && <Overview />}
+            {activeTab === "create_content" && (
+              <Module1Admin setActiveTab={setActiveTab} />
+            )}
+            {activeTab === "module1" && <Module1 />}
+            {activeTab === "module2" && <Module2 />}
+            {activeTab === "module3" && <Module3 />}
+            {activeTab === "prayers" && <Prayers />}
+
             {activeTab === "analytics" && (
               <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
                 <p>Analytics section coming soon</p>
@@ -40,5 +64,5 @@ export default function AdminDashboardPage() {
         <AdminFooter />
       </div>
     </div>
-  )
+  );
 }

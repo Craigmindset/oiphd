@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
 
 interface SidebarProps {
   activeTab: string;
@@ -34,6 +35,13 @@ export function Sidebar({
     { id: "transformation", label: "Transformation", icon: Zap },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <aside
@@ -90,6 +98,7 @@ export function Sidebar({
         <Button
           variant="outline"
           className="w-full justify-start gap-2 text-red-600 hover:text-red-700 bg-transparent"
+          onClick={handleLogout}
         >
           <svg
             className="w-5 h-5"
