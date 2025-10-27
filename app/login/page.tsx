@@ -3,18 +3,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth-context";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
-
-// Import Supabase client from your utility file
-import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,61 +25,23 @@ export default function LoginPage() {
     const password = (form.elements.namedItem("password") as HTMLInputElement)
       .value;
     try {
-      // Authenticate with Supabase
-      const { data, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-      if (signInError || !data.user) {
-        setError("Invalid credentials");
-        setLoading(false);
-        return;
-      }
-
-      // Fetch user profile to get role
-      const { data: profile, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Profile fetch error:", profileError);
-        // If profile doesn't exist, create one with default role
-        if (profileError.code === "PGRST116") {
-          const { error: insertError } = await supabase
-            .from("user_profiles")
-            .insert({
-              id: data.user.id,
-              email: data.user.email,
-              role: "user",
-            });
-
-          if (insertError) {
-            console.error("Profile creation error:", insertError);
-            setError("Could not create user profile");
-            setLoading(false);
-            return;
-          }
-
-          // Redirect to dashboard for new users
+      await login(email, password);
+      // Fetch the user to check their role
+      const response = await fetch("/api/auth/me");
+      if (response.ok) {
+        const userData = await response.json();
+        // Redirect based on role
+        if (userData.role === "admin") {
+          router.push("/admin");
+        } else {
           router.push("/dashboard");
-          return;
         }
-
-        setError(`Could not fetch user profile: ${profileError.message}`);
-        setLoading(false);
-        return;
-      }
-
-      if (profile.role === "admin") {
-        router.push("/admin");
       } else {
         router.push("/dashboard");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err?.message || "Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
     }

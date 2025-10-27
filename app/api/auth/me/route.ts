@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Fetch user profile (role, etc.)
     const { data: profile, error: profileError } = await adminSupabase
       .from("user_profiles")
-      .select("id, email, firstName, lastName, role")
+      .select("id, email, first_name, last_name, role")
       .eq("id", userData.user.id)
       .single();
     if (profileError || !profile) {
@@ -28,7 +28,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(profile);
+    // Map snake_case to camelCase for consistency
+    const userProfile = {
+      id: profile.id,
+      email: profile.email,
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      role: profile.role,
+    };
+
+    return NextResponse.json(userProfile);
   } catch (error) {
     return NextResponse.json({ error: "Auth check failed" }, { status: 500 });
   }

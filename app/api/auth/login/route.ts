@@ -20,8 +20,9 @@ export async function POST(request: NextRequest) {
         password,
       });
     if (signInError || !signInData.session) {
+      console.error("Supabase sign in error:", signInError);
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        { error: signInError?.message || "Invalid credentials" },
         { status: 401 }
       );
     }
@@ -29,18 +30,28 @@ export async function POST(request: NextRequest) {
     // Fetch user profile (role, etc.)
     const { data: profile, error: profileError } = await adminSupabase
       .from("user_profiles")
-      .select("id, email, firstName, lastName, role")
-      .eq("id", signInData.user.id)
+      .select("id, email, first_name, last_name, role")
+  .eq("id", signInData.user.id)
       .single();
     if (profileError || !profile) {
+      console.error("Profile fetch error:", profileError);
       return NextResponse.json(
-        { error: "User profile not found" },
+        { error: profileError?.message || "User profile not found" },
         { status: 401 }
       );
     }
 
+    // Map snake_case to camelCase for consistency
+    const userData = {
+      id: profile.id,
+      email: profile.email,
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      role: profile.role,
+    };
+
     // Set auth cookie with Supabase access token
-    const response = NextResponse.json(profile);
+    const response = NextResponse.json(userData);
     response.cookies.set("auth_token", signInData.session.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -50,6 +61,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }
