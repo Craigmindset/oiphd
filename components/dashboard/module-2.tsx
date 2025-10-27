@@ -154,36 +154,72 @@ export function Module2() {
       ) : error ? (
         <p className="text-red-600">{error}</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {audioItems.map((item, idx) => (
             <Card
               key={item.item_number}
-              className="hover:shadow-md transition-shadow"
+              className="hover:shadow-md transition-shadow rounded-lg"
             >
-              <CardContent className="p-3 md:p-6 flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-4">
-                  <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <CardContent className="py-1 px-2 md:p-4 flex flex-col md:flex-row md:items-center md:justify-between min-h-0">
+                <div className="flex items-center gap-2 md:gap-4 w-full min-h-0">
+                  <div className="w-7 h-7 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-5 h-5 md:w-6 md:h-6 text-blue-600"
+                      className="w-4 h-4 md:w-6 md:h-6 text-blue-600"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3V9h4v3h3l-5 5z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
+                  <div className="flex-1 min-h-0">
+                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
                       {item.title}
                     </h3>
                     {item.duration && (
-                      <p className="text-sm text-gray-500">{item.duration}</p>
+                      <p className="text-xs text-gray-500">{item.duration}</p>
                     )}
+                    {/* Mobile controls under title, smaller and tighter */}
+                    <div className="flex gap-1 mt-1 md:hidden">
+                      <Button
+                        size="icon"
+                        className={
+                          `h-7 w-7 p-0 hover:bg-blue-700 ` +
+                          (playbackStates[idx] === "playing"
+                            ? "bg-green-600"
+                            : "bg-blue-600")
+                        }
+                        onClick={() => handlePlay(idx)}
+                      >
+                        <Play className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className={
+                          `h-7 w-7 p-0 ` +
+                          (playbackStates[idx] === "paused"
+                            ? "bg-green-600"
+                            : "")
+                        }
+                        onClick={() => handlePause(idx)}
+                      >
+                        <Pause className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleStop(idx)}
+                      >
+                        <StopCircle className="w-3 h-3" />
+                      </Button>
+                    </div>
                     <audio
                       ref={(el) => {
                         audioRefs.current[idx] = el;
                       }}
                       src={item.content}
-                      className="mt-2 w-64"
+                      className="mt-1 w-44 md:w-64"
                       controls
                       style={{ display: "none" }}
                     />
@@ -201,7 +237,8 @@ export function Module2() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 items-center">
+                {/* Desktop controls on the right */}
+                <div className="hidden md:flex gap-2 items-center">
                   {playbackStates[idx] === "playing" && lottieData && (
                     <div className="flex items-center justify-center">
                       <Lottie
@@ -209,7 +246,7 @@ export function Module2() {
                         loop
                         autoplay
                         style={{ width: 60, height: 60 }}
-                        className="md:!w-[320px] md:!h-[50px]"
+                        className="md:w-[320px]! md:h-[50px]!"
                       />
                     </div>
                   )}

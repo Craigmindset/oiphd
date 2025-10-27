@@ -23,6 +23,10 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedCard, setPublishedCard] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  // New: audio input mode (upload or link)
+  const [audioInputMode, setAudioInputMode] = useState<"upload" | "link">(
+    "upload"
+  );
 
   const handlePublish = async () => {
     setIsPublishing(true);
@@ -176,89 +180,146 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
           )}
           {contentType === "audio" && (
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Audio File
-              </label>
-              <input
-                type="file"
-                accept="audio/*"
-                ref={fileInputRef}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setUploading(true);
-                  setError(null);
-                  // Upload to Supabase Storage (bucket: 'audio')
-                  const fileExt = file.name.split(".").pop();
-                  const filePath = `audio/${Date.now()}_${Math.random()
-                    .toString(36)
-                    .substring(2)}.${fileExt}`;
-                  const { data, error } = await supabase.storage
-                    .from("audio")
-                    .upload(filePath, file);
-                  if (error) {
-                    setError("Audio upload failed: " + error.message);
-                    setUploading(false);
-                    return;
-                  }
-                  // Get public URL
-                  const { data: urlData } = supabase.storage
-                    .from("audio")
-                    .getPublicUrl(filePath);
-                  setContent(urlData?.publicUrl || "");
-                  setUploading(false);
-                }}
-                disabled={uploading}
-              />
-              {uploading && (
-                <span className="text-xs text-blue-600 ml-2">Uploading...</span>
-              )}
-              {content && (
-                <div className="mt-2">
-                  <label className="block text-xs font-medium mb-1">
-                    Audio URL
+              <div className="flex gap-4 mb-2">
+                <label className="flex items-center gap-1 text-sm">
+                  <input
+                    type="radio"
+                    name="audioInputMode"
+                    value="upload"
+                    checked={audioInputMode === "upload"}
+                    onChange={() => {
+                      setAudioInputMode("upload");
+                      setContent("");
+                    }}
+                  />
+                  Upload file
+                </label>
+                <label className="flex items-center gap-1 text-sm">
+                  <input
+                    type="radio"
+                    name="audioInputMode"
+                    value="link"
+                    checked={audioInputMode === "link"}
+                    onChange={() => {
+                      setAudioInputMode("link");
+                      setContent("");
+                    }}
+                  />
+                  Insert link
+                </label>
+              </div>
+              {audioInputMode === "upload" ? (
+                <>
+                  <label className="block text-sm font-medium mb-1">
+                    Audio File
                   </label>
-                  <Input type="url" value={content} readOnly />
-                  <div className="flex items-center gap-2 mt-2">
-                    <audio
-                      controls
-                      src={content}
-                      className="w-64"
-                      ref={fileInputRef as any}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const audio =
-                          fileInputRef.current as unknown as HTMLAudioElement | null;
-                        if (audio) audio.pause();
-                      }}
-                    >
-                      Pause
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const audio =
-                          fileInputRef.current as unknown as HTMLAudioElement | null;
-                        if (audio) {
-                          audio.pause();
-                          audio.currentTime = 0;
-                        }
-                      }}
-                    >
-                      Stop
-                    </Button>
-                  </div>
-                </div>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    ref={fileInputRef}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploading(true);
+                      setError(null);
+                      // Upload to Supabase Storage (bucket: 'audio')
+                      const fileExt = file.name.split(".").pop();
+                      const filePath = `audio/${Date.now()}_${Math.random()
+                        .toString(36)
+                        .substring(2)}.${fileExt}`;
+                      const { data, error } = await supabase.storage
+                        .from("audio")
+                        .upload(filePath, file);
+                      if (error) {
+                        setError("Audio upload failed: " + error.message);
+                        setUploading(false);
+                        return;
+                      }
+                      // Get public URL
+                      const { data: urlData } = supabase.storage
+                        .from("audio")
+                        .getPublicUrl(filePath);
+                      setContent(urlData?.publicUrl || "");
+                      setUploading(false);
+                    }}
+                    disabled={uploading}
+                  />
+                  {uploading && (
+                    <span className="text-xs text-blue-600 ml-2">
+                      Uploading...
+                    </span>
+                  )}
+                  {content && (
+                    <div className="mt-2">
+                      <label className="block text-xs font-medium mb-1">
+                        Audio URL
+                      </label>
+                      <Input type="url" value={content} readOnly />
+                      <div className="flex items-center gap-2 mt-2">
+                        <audio
+                          controls
+                          src={content}
+                          className="w-64"
+                          ref={fileInputRef as any}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const audio =
+                              fileInputRef.current as unknown as HTMLAudioElement | null;
+                            if (audio) audio.pause();
+                          }}
+                        >
+                          Pause
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const audio =
+                              fileInputRef.current as unknown as HTMLAudioElement | null;
+                            if (audio) {
+                              audio.pause();
+                              audio.currentTime = 0;
+                            }
+                          }}
+                        >
+                          Stop
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <span className="text-xs text-gray-500 block mt-1">
+                    Accepted: mp3, wav, ogg, aac, flac, m4a
+                  </span>
+                </>
+              ) : (
+                <>
+                  <label className="block text-sm font-medium mb-1">
+                    Audio Link
+                  </label>
+                  <Input
+                    type="url"
+                    placeholder="Paste audio URL (mp3, wav, etc.)"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                  />
+                  {content && (
+                    <div className="mt-2">
+                      <label className="block text-xs font-medium mb-1">
+                        Preview
+                      </label>
+                      <audio controls src={content} className="w-64" />
+                    </div>
+                  )}
+                  <span className="text-xs text-gray-500 block mt-1">
+                    Example: https://.../audio.mp3
+                  </span>
+                </>
               )}
-              <span className="text-xs text-gray-500 block mt-1">
-                Accepted: mp3, wav, ogg, aac, flac, m4a
-              </span>
             </div>
           )}
           {contentType === "video" && (

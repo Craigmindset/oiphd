@@ -50,7 +50,7 @@ export default function Module1Admin() {
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-600">{error}</div>}
       {cards.length === 0 && !loading && <div>No content found.</div>}
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, idx) => (
           <Card
             key={card.id || card.item_number}
