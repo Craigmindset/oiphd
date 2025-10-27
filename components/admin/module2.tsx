@@ -44,15 +44,9 @@ export default function Module2Admin() {
         {cards.map((card, idx) => (
           <Card
             key={card.id || card.item_number}
-            className="border-green-400 border-2"
+            className="border-green-400 border-2 p-2 min-h-0"
           >
-            <CardHeader>
-              <CardTitle>
-                {editIndex === idx ? "Edit Card" : card.title}
-              </CardTitle>
-            </CardHeader>
             <CardContent>
-              <div className="mb-2 font-semibold">Item: {card.item_number}</div>
               {editIndex === idx ? (
                 <form
                   onSubmit={async (e) => {
@@ -96,40 +90,48 @@ export default function Module2Admin() {
                 </form>
               ) : (
                 <>
-                  <audio
-                    controls
-                    src={card.content}
-                    className="w-full mt-2 mb-2"
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setEditIndex(idx);
-                        setEditTitle(card.title);
-                        setEditContent(card.content);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={async () => {
-                        if (
-                          confirm("Are you sure you want to delete this card?")
-                        ) {
-                          await supabase
-                            .from("module_content")
-                            .delete()
-                            .eq("id", card.id);
-                          fetchCards();
-                        }
-                      }}
-                    >
-                      Delete
-                    </Button>
+                  <audio controls src={card.content} className="w-full mb-2" />
+                  <div className="flex items-center gap-2 mb-2 justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-500">
+                        Item: {card.item_number}
+                      </span>
+                      <CardTitle className="text-sm m-0 p-0">
+                        {editIndex === idx ? "Edit Card" : card.title}
+                      </CardTitle>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditIndex(idx);
+                          setEditTitle(card.title);
+                          setEditContent(card.content);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={async () => {
+                          if (
+                            confirm(
+                              "Are you sure you want to delete this card?"
+                            )
+                          ) {
+                            await supabase
+                              .from("module_content")
+                              .delete()
+                              .eq("id", card.id);
+                            fetchCards();
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}

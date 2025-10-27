@@ -56,8 +56,24 @@ export function Overview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
+          // Add onClick to Total Users card
+          const isUsersCard = stat.title === "Total Users";
           return (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={index}
+              className={`hover:shadow-lg transition-shadow ${
+                isUsersCard ? "cursor-pointer" : ""
+              }`}
+              onClick={
+                isUsersCard
+                  ? () => {
+                      window.dispatchEvent(
+                        new CustomEvent("setAdminTab", { detail: "users" })
+                      );
+                    }
+                  : undefined
+              }
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
                   {stat.title}

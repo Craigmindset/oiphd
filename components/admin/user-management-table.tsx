@@ -19,7 +19,8 @@ interface UserProfile {
   phone: string | null;
   country: string | null;
   occupation: string | null;
-  expectation: string | null;
+  address: string | null;
+  expectations: string | null;
 }
 
 export function UserManagementTable() {
@@ -71,8 +72,8 @@ export function UserManagementTable() {
       </div>
 
       {/* Table */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
+  <Card className="overflow-hidden min-h-0 p-2">
+        <div className="overflow-x-auto max-w-full">
           {loading ? (
             <div className="p-8 text-center text-gray-500">
               Loading users...
@@ -83,31 +84,34 @@ export function UserManagementTable() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     S/N
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Gender
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Contact
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Country
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                    Work Status
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
+                    Work
                   </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
+                    Address
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-sm text-gray-700">
                     Expectations
                   </th>
                 </tr>
@@ -122,18 +126,32 @@ export function UserManagementTable() {
                     <td className="px-4 py-3">
                       {user.registering_for_someone ? "Yes" : "No"}
                     </td>
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                    <td className="px-4 py-3 font-medium text-gray-900 text-sm">
                       {user.first_name} {user.last_name}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{user.gender}</td>
-                    <td className="px-4 py-3 text-gray-600">{user.email}</td>
-                    <td className="px-4 py-3 text-gray-600">{user.phone}</td>
-                    <td className="px-4 py-3 text-gray-600">{user.country}</td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 text-sm">
+                      {user.gender}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">
+                      {user.email}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">
+                      {user.phone}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">
+                      {user.country}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">
                       {user.occupation}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {user.expectation}
+                    <td
+                      className="px-4 py-3 text-gray-600 text-sm max-w-[8rem] truncate"
+                      title={user.address || ""}
+                    >
+                      {user.address}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 text-sm">
+                      {user.expectations}
                     </td>
                   </tr>
                 ))}

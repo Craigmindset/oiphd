@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import AdminSidebar from "@/components/admin/sidebar";
 import { AdminHeader } from "@/components/admin/header";
 import { UserManagementTable } from "@/components/admin/user-management-table";
 import Module1 from "@/components/admin/module1";
@@ -14,7 +14,7 @@ import { AdminFooter } from "@/components/admin/footer";
 import { ProtectedRoute } from "@/components/protected-route";
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Listen for setAdminTab event to switch tabs after publishing
   useEffect(() => {
@@ -39,8 +39,9 @@ export default function AdminDashboardPage() {
           {/* Content Area */}
           <main className="flex-1 min-h-0 overflow-auto">
             <div className="p-6 sm:p-8">
-              {activeTab === "users" && <UserManagementTable />}
               {activeTab === "overview" && <Overview />}
+              {activeTab === "users" && <UserManagementTable />}
+
               {activeTab === "create_content" && (
                 <Module1Admin setActiveTab={setActiveTab} />
               )}
