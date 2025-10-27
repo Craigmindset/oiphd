@@ -90,18 +90,16 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
         {loading ? "Hello..." : `Hello, ${firstName ? firstName : "User"}`}
       </h2>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         {/* Progress Indicator */}
-        <div className="hidden sm:flex items-center gap-2">
-          <div className="text-right">
-            <p className="text-sm font-medium text-gray-900">Progress</p>
-            <p className="text-xs text-gray-500">{getProgress()}% Complete</p>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-sm font-bold text-blue-600">
-              {getProgress()}%
-            </span>
-          </div>
+        <div className="hidden md:block text-right">
+          <p className="text-sm font-medium text-gray-900">Progress</p>
+          <p className="text-xs text-gray-500">{getProgress()}% Complete</p>
+        </div>
+        <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-blue-100 flex items-center justify-center  md:ml-6">
+          <span className="text-xs md:text-sm font-bold text-blue-600">
+            {getProgress()}%
+          </span>
         </div>
 
         {/* Notifications */}
@@ -114,7 +112,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
         <Button
           variant="outline"
           size="sm"
-          className="hidden sm:flex gap-2 bg-transparent"
+          className="flex gap-2 bg-transparent"
         >
           <svg
             className="w-4 h-4"
@@ -129,7 +127,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Invite
+          <span className="hidden sm:inline">Invite</span>
         </Button>
 
         {/* User Menu */}
