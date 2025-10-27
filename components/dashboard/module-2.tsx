@@ -209,7 +209,7 @@ export function Module2() {
                         loop
                         autoplay
                         style={{ width: 60, height: 60 }}
-                        className="md:!w-[120px] md:!h-[120px]"
+                        className="md:!w-[320px] md:!h-[50px]"
                       />
                     </div>
                   )}

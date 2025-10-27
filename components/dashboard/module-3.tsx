@@ -1,40 +1,123 @@
-"use client"
+"use client";
+// Helper to get YouTube thumbnail
+function getYouTubeThumbnail(url: string) {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/
+  );
+  return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null;
+}
 
-import { Play } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { Play } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export function Module3() {
-  const videoItems = [
-    { title: "Welcome to Your Journey", duration: "5:20" },
-    { title: "Understanding Spiritual Growth", duration: "12:45" },
-    { title: "Healing Techniques", duration: "18:30" },
-    { title: "Community Stories", duration: "22:15" },
-    { title: "Expert Insights", duration: "15:00" },
-    { title: "Your Next Steps", duration: "8:50" },
-  ]
+  const [videoItems, setVideoItems] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const { data, error } = await supabase
+        .from("module_content")
+        .select("item_number, title, content, duration")
+        .eq("module_number", 3)
+        .eq("content_type", "video")
+        .order("item_number", { ascending: true });
+      if (data) {
+        setVideoItems(data);
+      }
+    };
+    fetchVideos();
+  }, []);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Module 3: Video Sessions</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        Module 3: Video Sessions
+      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videoItems.map((item, index) => (
-          <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 aspect-video flex items-center justify-center group">
-              <Button
-                size="icon"
-                className="bg-white hover:bg-gray-100 text-blue-600 w-16 h-16 rounded-full group-hover:scale-110 transition-transform"
-              >
-                <Play className="w-6 h-6 ml-1" />
-              </Button>
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-              <p className="text-sm text-gray-500">{item.duration}</p>
-            </CardContent>
-          </Card>
+          <Dialog key={item.item_number || index}>
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="relative aspect-video flex items-center justify-center group overflow-hidden bg-gray-200">
+                {/* Thumbnail */}
+                {item.content && item.content.includes("youtube.com") ? (
+                  <img
+                    src={getYouTubeThumbnail(item.content) || ""}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-300">
+                    <Play className="w-12 h-12 text-gray-400 opacity-60" />
+                  </div>
+                )}
+                {/* Play Button */}
+                <DialogTrigger asChild>
+                  <Button
+                    size="icon"
+                    className="bg-white hover:bg-gray-100 text-blue-600 w-16 h-16 rounded-full group-hover:scale-110 transition-transform z-10"
+                  >
+                    <Play className="w-6 h-6 ml-1" />
+                  </Button>
+                </DialogTrigger>
+              </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-500">{item.duration || ""}</p>
+              </CardContent>
+            </Card>
+            <DialogContent className="max-w-full sm:max-w-2xl p-0">
+              <div className="relative w-screen max-w-full sm:w-full aspect-video bg-black">
+                {item.content && item.content.includes("youtube.com") ? (
+                  <iframe
+                    src={item.content
+                      .replace("watch?v=", "embed/")
+                      .replace("youtube.com/shorts/", "youtube.com/embed/")}
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    className="w-full h-full object-contain rounded"
+                    title={item.title}
+                    style={{
+                      minHeight: 200,
+                      maxHeight: "80vh",
+                      aspectRatio: "16/9",
+                    }}
+                  />
+                ) : (
+                  <video
+                    src={item.content}
+                    controls
+                    // autoPlay removed for mobile compatibility
+                    className="w-full h-full object-contain rounded"
+                    style={{
+                      minHeight: 200,
+                      maxHeight: "80vh",
+                      aspectRatio: "16/9",
+                    }}
+                  />
+                )}
+                <DialogClose asChild>
+                  <Button
+                    size="icon"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                  >
+                    <span className="sr-only">Close</span>×
+                  </Button>
+                </DialogClose>
+              </div>
+            </DialogContent>
+          </Dialog>
         ))}
       </div>
     </div>
-  )
+  );
 }
