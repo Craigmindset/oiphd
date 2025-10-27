@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Cross,
+  UserRoundCheck,
   Target,
   BookOpenCheck,
   ChevronLeft,
@@ -23,7 +24,10 @@ interface AdminSidebarProps {
   setActiveTab: (tab: string) => void;
 }
 
-export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarProps) {
+export default function AdminSidebar({
+  activeTab,
+  setActiveTab,
+}: AdminSidebarProps) {
   const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const handleLogout = async () => {
@@ -38,7 +42,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
     { id: "module2", label: "Module-Audio", icon: BookOpenCheck },
     { id: "module3", label: "Module-Video", icon: BookOpenCheck },
     { id: "prayers", label: "Prayers", icon: Cross },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "testimonies", label: "Testimonies", icon: UserRoundCheck },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -87,50 +91,51 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
           </Button>
         </div>
       </div>
-    {/* Navigation */}
-    <nav
-      className={`flex-1 p-2 md:p-4 space-y-2 transition-all duration-200 ${
-        collapsed ? "items-center mt-10" : "mt-6"
-      }`}
-    >
-      {menuItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center ${
-              collapsed ? "justify-center" : "gap-3 px-4"
-            } py-3 rounded-lg transition-colors ${
-              activeTab === item.id
-                ? "bg-blue-50 text-blue-600 font-semibold"
-                : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <Icon className="w-5 h-5" />
-            {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
-          </button>
-        );
-      })}
-    </nav>
-    {/* Logout */}
-    <div
-      className={`p-2 md:p-4 border-t border-gray-200 mb-10 transition-all duration-200 ${
-        collapsed ? "flex justify-center" : ""
-      }`}
-    >
-      <Button
-        variant="outline"
-        className={`w-full ${
-          collapsed ? "justify-center" : "justify-start gap-2"
-        } text-red-600 hover:text-red-700 bg-transparent`}
-        onClick={handleLogout}
+      {/* Navigation */}
+      <nav
+        className={`flex-1 p-2 md:p-4 space-y-2 transition-all duration-200 ${
+          collapsed ? "items-center mt-10" : "mt-6"
+        }`}
       >
-        <LogOut className="w-5 h-5" />
-        {!collapsed && "Logout"}
-      </Button>
-    </div>
-  </aside>
-
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center ${
+                collapsed ? "justify-center" : "gap-3 px-4"
+              } py-3 rounded-lg transition-colors ${
+                activeTab === item.id
+                  ? "bg-blue-50 text-blue-600 font-semibold"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              {!collapsed && (
+                <span className="whitespace-nowrap">{item.label}</span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+      {/* Logout */}
+      <div
+        className={`p-2 md:p-4 border-t border-gray-200 mb-10 transition-all duration-200 ${
+          collapsed ? "flex justify-center" : ""
+        }`}
+      >
+        <Button
+          variant="outline"
+          className={`w-full ${
+            collapsed ? "justify-center" : "justify-start gap-2"
+          } text-red-600 hover:text-red-700 bg-transparent`}
+          onClick={handleLogout}
+        >
+          <LogOut className="w-5 h-5" />
+          {!collapsed && "Logout"}
+        </Button>
+      </div>
+    </aside>
   );
 }

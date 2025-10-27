@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useModuleProgress } from "@/hooks/use-module-progress";
+import { useToast } from "@/components/ui/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ interface HeaderProps {
 
 export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const { getProgress } = useModuleProgress();
+  const { toast } = useToast();
   const [firstName, setFirstName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -113,6 +115,24 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
           variant="outline"
           size="sm"
           className="flex gap-2 bg-transparent"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText("https://oiphd.vercel.app");
+              alert("Shared link copied!");
+              toast({
+                title: "Invite link copied!",
+                description:
+                  "Share https://oiphd.vercel.app with your friends.",
+              });
+            } catch {
+              // Fallback: show prompt for manual copy
+              window.prompt("Copy this link:", "https://oiphd.vercel.app");
+              toast({
+                title: "Failed to copy automatically",
+                description: "Please copy the link manually.",
+              });
+            }
+          }}
         >
           <svg
             className="w-4 h-4"
