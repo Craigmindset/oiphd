@@ -153,11 +153,11 @@ export function Module2() {
               key={item.item_number}
               className="hover:shadow-md transition-shadow"
             >
-              <CardContent className="p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <CardContent className="p-3 md:p-6 flex items-center justify-between">
+                <div className="flex items-center gap-2 md:gap-4">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-blue-600"
+                      className="w-5 h-5 md:w-6 md:h-6 text-blue-600"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -196,12 +196,13 @@ export function Module2() {
                 </div>
                 <div className="flex gap-2 items-center">
                   {playbackStates[idx] === "playing" && lottieData && (
-                    <div className="w-100 h-10 flex items-center justify-center">
+                    <div className="flex items-center justify-center">
                       <Lottie
                         animationData={lottieData}
                         loop
                         autoplay
-                        style={{ width: 306, height: 206 }}
+                        style={{ width: 60, height: 60 }}
+                        className="md:!w-[120px] md:!h-[120px]"
                       />
                     </div>
                   )}
