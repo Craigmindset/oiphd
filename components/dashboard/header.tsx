@@ -34,34 +34,29 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const [firstName, setFirstName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { logout } = require("@/lib/auth-context");
   // Logout handler
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
     router.push("/login");
   };
 
   useEffect(() => {
     async function fetchFirstName() {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (!response.ok) {
+          setFirstName(null);
+          setLoading(false);
+          return;
+        }
+        const user = await response.json();
+        setFirstName(user.firstName || null);
+      } catch (err) {
         setFirstName(null);
+      } finally {
         setLoading(false);
-        return;
       }
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("first_name")
-        .eq("id", user.id)
-        .single();
-      if (!error && data && data.first_name) {
-        setFirstName(data.first_name);
-      } else {
-        setFirstName(null);
-      }
-      setLoading(false);
     }
     fetchFirstName();
   }, []);

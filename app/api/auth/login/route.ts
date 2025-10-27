@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await adminSupabase
       .from("user_profiles")
       .select("id, email, first_name, last_name, role")
-  .eq("id", signInData.user.id)
+      .eq("id", signInData.user.id)
       .single();
     if (profileError || !profile) {
       console.error("Profile fetch error:", profileError);
