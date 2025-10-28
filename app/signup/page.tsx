@@ -594,6 +594,9 @@ export default function SignupPage() {
                       </h2>
                       <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
+                        <p className="text-xs text-gray-500">
+                          Password must be over 5 characters
+                        </p>
                         <div className="relative">
                           <Input
                             id="password"
@@ -601,10 +604,11 @@ export default function SignupPage() {
                             type={showPassword ? "text" : "password"}
                             value={formData.password}
                             onChange={handleInputChange}
-                            placeholder="password must be over 5 characters"
+                            placeholder="password"
                             required
                             minLength={6}
                             maxLength={15}
+                            className="placeholder:text-sm sm:placeholder:text-lg"
                           />
                           <button
                             type="button"
@@ -714,9 +718,7 @@ export default function SignupPage() {
                             ></path>
                           </svg>
                         )}
-                        {isSubmitting
-                          ? "Registering..."
-                          : "Complete Registration"}
+                        {isSubmitting ? "Registering..." : "Register"}
                       </Button>
                     )}
                   </div>
