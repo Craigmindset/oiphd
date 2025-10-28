@@ -1,5 +1,5 @@
 "use client";
-
+import { useState } from "react";
 import { Module1 } from "@/components/dashboard/module-1";
 import { Button } from "@/components/ui/button";
 import { useModuleProgress } from "@/hooks/use-module-progress";
@@ -10,6 +10,7 @@ export default function Module1Page() {
     useModuleProgress();
   const moduleId = "module1";
   const completed = isModuleCompleted(moduleId);
+  const [allCardsOpened, setAllCardsOpened] = useState(false);
 
   const toggleCompletion = () => {
     if (completed) {
@@ -27,6 +28,12 @@ export default function Module1Page() {
           variant={completed ? "outline" : "default"}
           onClick={toggleCompletion}
           className="flex items-center gap-2"
+          disabled={!allCardsOpened}
+          title={
+            !allCardsOpened
+              ? "Open all cards to complete the module"
+              : undefined
+          }
         >
           {completed ? (
             <>
@@ -41,7 +48,8 @@ export default function Module1Page() {
           )}
         </Button>
       </div>
-      <Module1 />
+      <Module1 onAllCardsOpened={setAllCardsOpened} />
     </div>
   );
 }
+// ...existing code...

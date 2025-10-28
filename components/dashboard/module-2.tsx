@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { Play, Pause, StopCircle } from "lucide-react";
 
 import Lottie from "lottie-react";
@@ -19,7 +20,38 @@ function formatDuration(seconds: number) {
   return `${m}:${s}`;
 }
 
-export function Module2() {
+export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
+  const { user } = useAuth();
+  const [expandedItems, setExpandedItems] = useState<number[]>([]);
+  // Fetch expandedItems from Supabase on mount
+  useEffect(() => {
+    if (!user || !moduleId) return;
+    const fetchProgress = async () => {
+      const { data } = await supabase
+        .from("module_progress")
+        .select("expanded_items")
+        .eq("user_id", user.id)
+        .eq("module_id", moduleId)
+        .single();
+      if (data && Array.isArray(data.expanded_items)) {
+        setExpandedItems(data.expanded_items);
+      }
+    };
+    fetchProgress();
+  }, [user, moduleId]);
+
+  // Save expandedItems to Supabase when changed
+  useEffect(() => {
+    if (!user || !moduleId) return;
+    const saveProgress = async () => {
+      await supabase.from("module_progress").upsert({
+        user_id: user.id,
+        module_id: moduleId,
+        expanded_items: expandedItems,
+      });
+    };
+    if (expandedItems.length > 0) saveProgress();
+  }, [expandedItems, user, moduleId]);
   const [lottieData, setLottieData] = useState<any>(null);
   useEffect(() => {
     fetch("/Sound%20voice%20waves.json")
@@ -122,6 +154,7 @@ export function Module2() {
       setPlaybackStates((prev) =>
         prev.map((s, i) => (i === idx ? "playing" : "idle"))
       );
+      setExpandedItems((prev) => (prev.includes(idx) ? prev : [...prev, idx]));
     }
   };
 
@@ -154,136 +187,184 @@ export function Module2() {
       ) : error ? (
         <p className="text-red-600">{error}</p>
       ) : (
-        <div className="space-y-3">
-          {audioItems.map((item, idx) => (
-            <Card
-              key={item.item_number}
-              className="hover:shadow-md transition-shadow rounded-lg"
-            >
-              <CardContent className="py-1 px-2 md:p-4 flex flex-col md:flex-row md:items-center md:justify-between min-h-0">
-                <div className="flex items-center gap-2 md:gap-4 w-full min-h-0">
-                  <div className="w-7 h-7 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 md:w-6 md:h-6 text-blue-600"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3V9h4v3h3l-5 5z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-h-0">
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                      {item.title}
-                    </h3>
-                    {item.duration && (
-                      <p className="text-xs text-gray-500">{item.duration}</p>
-                    )}
-                    {/* Mobile controls under title, smaller and tighter */}
-                    <div className="flex gap-1 mt-1 md:hidden">
-                      <Button
-                        size="icon"
-                        className={
-                          `h-7 w-7 p-0 hover:bg-blue-700 ` +
-                          (playbackStates[idx] === "playing"
-                            ? "bg-green-600"
-                            : "bg-blue-600")
-                        }
-                        onClick={() => handlePlay(idx)}
+        <>
+          <div className="space-y-3">
+            {audioItems.map((item, idx) => (
+              <Card
+                key={item.item_number}
+                className="hover:shadow-md transition-shadow rounded-lg"
+              >
+                <CardContent className="py-1 px-2 md:p-4 flex flex-col md:flex-row md:items-center md:justify-between min-h-0">
+                  <div className="flex items-center gap-2 md:gap-4 w-full min-h-0">
+                    <div className="w-7 h-7 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 md:w-6 md:h-6 text-blue-600"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        <Play className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className={
-                          `h-7 w-7 p-0 ` +
-                          (playbackStates[idx] === "paused"
-                            ? "bg-green-600"
-                            : "")
-                        }
-                        onClick={() => handlePause(idx)}
-                      >
-                        <Pause className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-7 w-7 p-0"
-                        onClick={() => handleStop(idx)}
-                      >
-                        <StopCircle className="w-3 h-3" />
-                      </Button>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3V9h4v3h3l-5 5z" />
+                      </svg>
                     </div>
-                    <audio
-                      ref={(el) => {
-                        audioRefs.current[idx] = el;
-                      }}
-                      src={item.content}
-                      className="mt-1 w-44 md:w-64"
-                      controls
-                      style={{ display: "none" }}
-                    />
-                    <div className="text-xs text-gray-500 mt-1">
-                      Duration: {formatDuration(durations[idx])}
-                      {durations[idx] > 0 && (
-                        <>
-                          {" | "}
-                          Remaining:{" "}
-                          {formatDuration(
-                            Math.max(0, durations[idx] - currentTimes[idx])
-                          )}
-                        </>
+                    <div className="flex-1 min-h-0">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                        {item.title}
+                      </h3>
+                      {item.duration && (
+                        <p className="text-xs text-gray-500">{item.duration}</p>
                       )}
+                      {/* Mobile controls under title, smaller and tighter */}
+                      <div className="flex gap-1 mt-1 md:hidden">
+                        <Button
+                          size="icon"
+                          className={
+                            `h-7 w-7 p-0 hover:bg-blue-700 ` +
+                            (playbackStates[idx] === "playing"
+                              ? "bg-green-600"
+                              : "bg-blue-600")
+                          }
+                          onClick={() => handlePlay(idx)}
+                        >
+                          <Play className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className={
+                            `h-7 w-7 p-0 ` +
+                            (playbackStates[idx] === "paused"
+                              ? "bg-green-600"
+                              : "")
+                          }
+                          onClick={() => handlePause(idx)}
+                        >
+                          <Pause className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleStop(idx)}
+                        >
+                          <StopCircle className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <audio
+                        ref={(el) => {
+                          audioRefs.current[idx] = el;
+                        }}
+                        src={item.content}
+                        className="mt-1 w-44 md:w-64"
+                        controls
+                        style={{ display: "none" }}
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        Duration: {formatDuration(durations[idx])}
+                        {durations[idx] > 0 && (
+                          <>
+                            {" | "}
+                            Remaining:{" "}
+                            {formatDuration(
+                              Math.max(0, durations[idx] - currentTimes[idx])
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                {/* Desktop controls on the right */}
-                <div className="hidden md:flex gap-2 items-center">
-                  {playbackStates[idx] === "playing" && lottieData && (
-                    <div className="flex items-center justify-center">
-                      <Lottie
-                        animationData={lottieData}
-                        loop
-                        autoplay
-                        style={{ width: 60, height: 60 }}
-                        className="md:w-[320px]! md:h-[50px]!"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    size="icon"
-                    className={
-                      `hover:bg-blue-700 ` +
-                      (playbackStates[idx] === "playing"
-                        ? "bg-green-600"
-                        : "bg-blue-600")
-                    }
-                    onClick={() => handlePlay(idx)}
-                  >
-                    <Play className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className={
-                      playbackStates[idx] === "paused" ? "bg-green-600" : ""
-                    }
-                    onClick={() => handlePause(idx)}
-                  >
-                    <Pause className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={() => handleStop(idx)}
-                  >
-                    <StopCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {/* Desktop controls on the right */}
+                  <div className="hidden md:flex gap-2 items-center">
+                    {playbackStates[idx] === "playing" && lottieData && (
+                      <div className="flex items-center justify-center">
+                        <Lottie
+                          animationData={lottieData}
+                          loop
+                          autoplay
+                          style={{ width: 60, height: 60 }}
+                          className="md:w-[320px]! md:h-[50px]!"
+                        />
+                      </div>
+                    )}
+                    <Button
+                      size="icon"
+                      className={
+                        `hover:bg-blue-700 ` +
+                        (playbackStates[idx] === "playing"
+                          ? "bg-green-600"
+                          : "bg-blue-600")
+                      }
+                      onClick={() => handlePlay(idx)}
+                    >
+                      <Play className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className={
+                        playbackStates[idx] === "paused" ? "bg-green-600" : ""
+                      }
+                      onClick={() => handlePause(idx)}
+                    >
+                      <Pause className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => handleStop(idx)}
+                    >
+                      <StopCircle className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {/* Next button outside the cards, only show if all audio cards are played (opened) */}
+          <div className="flex justify-end mt-6 gap-4">
+            <button
+              className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition disabled:opacity-50"
+              disabled={
+                !(
+                  audioItems.length > 0 &&
+                  audioItems.every((_, idx) => expandedItems.includes(idx))
+                )
+              }
+              onClick={async () => {
+                if (!user) return;
+                // Mark module2 as completed in Supabase
+                await supabase.from("module_progress").upsert({
+                  user_id: user.id,
+                  module_id: "module2",
+                  completed: true,
+                });
+              }}
+            >
+              Mark as Complete
+            </button>
+            <button
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition disabled:opacity-50"
+              disabled={
+                !(
+                  audioItems.length > 0 &&
+                  audioItems.every((_, idx) => expandedItems.includes(idx))
+                )
+              }
+              onClick={async () => {
+                if (!user) return;
+                // Mark module2 as completed in Supabase
+                await supabase.from("module_progress").upsert({
+                  user_id: user.id,
+                  module_id: "module2",
+                  completed: true,
+                });
+                if (typeof window !== "undefined") {
+                  window.location.href = "/dashboard/module3";
+                }
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

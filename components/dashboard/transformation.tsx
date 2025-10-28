@@ -56,7 +56,7 @@ export function Transformation() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Transformation</h1>
-      <Card className="max-w-2xl">
+      <Card className="max-w-4xl justify-center">
         <CardHeader>
           <CardTitle>Share Your Testimony</CardTitle>
         </CardHeader>

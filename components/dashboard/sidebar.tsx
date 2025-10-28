@@ -47,7 +47,7 @@ export function Sidebar({
     <aside
       className={
         inDrawer
-          ? "flex w-full h-full bg-black border-r border-gray-200 flex-col"
+          ? "flex w-full h-full bg-blue-50 border-r border-gray-200 flex-col"
           : "hidden md:flex md:w-64 bg-white border-r border-gray-200 flex-col"
       }
     >
@@ -82,7 +82,7 @@ export function Sidebar({
               onClick={handleClick}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 activeTab === item.id
-                  ? "bg-blue-50 text-blue-600 font-semibold"
+                  ? "bg-orange-100 text-blue-600 font-semibold"
                   : "text-gray-700 hover:bg-gray-50"
               }`}
             >

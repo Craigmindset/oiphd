@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useModuleProgress } from "@/hooks/use-module-progress";
+import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/use-toast";
 import {
   DropdownMenu,
@@ -36,7 +37,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const [firstName, setFirstName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { logout } = require("@/lib/auth-context");
+  const { logout } = useAuth();
   // Logout handler
   const handleLogout = async () => {
     await logout();

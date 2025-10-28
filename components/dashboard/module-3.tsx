@@ -8,7 +8,10 @@ function getYouTubeThumbnail(url: string) {
 }
 
 import { useEffect, useState } from "react";
+import { useModuleProgress } from "@/hooks/use-module-progress";
+import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabaseClient";
+
 import { Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +22,56 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-export function Module3() {
+export function Module3({ moduleId = "module3" }: { moduleId?: string }) {
+  const { user } = useAuth();
+  const [expandedItems, setExpandedItems] = useState<number[]>([]);
   const [videoItems, setVideoItems] = useState<any[]>([]);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const { markModuleComplete } = useModuleProgress();
+  // Fetch completion status from Supabase on mount
+  useEffect(() => {
+    if (!user || !moduleId) return;
+    const fetchCompletion = async () => {
+      const { data } = await supabase
+        .from("module_progress")
+        .select("completed")
+        .eq("user_id", user.id)
+        .eq("module_id", moduleId)
+        .single();
+      if (data && data.completed) setIsCompleted(true);
+    };
+    fetchCompletion();
+  }, [user, moduleId]);
+
+  // Fetch expandedItems from Supabase on mount
+  useEffect(() => {
+    if (!user || !moduleId) return;
+    const fetchProgress = async () => {
+      const { data } = await supabase
+        .from("module_progress")
+        .select("expanded_items")
+        .eq("user_id", user.id)
+        .eq("module_id", moduleId)
+        .single();
+      if (data && Array.isArray(data.expanded_items)) {
+        setExpandedItems(data.expanded_items);
+      }
+    };
+    fetchProgress();
+  }, [user, moduleId]);
+
+  // Save expandedItems to Supabase when changed
+  useEffect(() => {
+    if (!user || !moduleId) return;
+    const saveProgress = async () => {
+      await supabase.from("module_progress").upsert({
+        user_id: user.id,
+        module_id: moduleId,
+        expanded_items: expandedItems,
+      });
+    };
+    if (expandedItems.length > 0) saveProgress();
+  }, [expandedItems, user, moduleId]);
   useEffect(() => {
     const fetchVideos = async () => {
       const { data, error } = await supabase
@@ -63,6 +114,11 @@ export function Module3() {
                   <Button
                     size="icon"
                     className="bg-white hover:bg-gray-100 text-blue-600 w-16 h-16 rounded-full group-hover:scale-110 transition-transform z-10"
+                    onClick={() =>
+                      setExpandedItems((prev) =>
+                        prev.includes(index) ? prev : [...prev, index]
+                      )
+                    }
                   >
                     <Play className="w-6 h-6 ml-1" />
                   </Button>
@@ -117,6 +173,47 @@ export function Module3() {
             </DialogContent>
           </Dialog>
         ))}
+      </div>
+      {/* Mark as Complete and Next buttons, only show if all video cards are opened */}
+      <div className="flex justify-end mt-6 gap-4">
+        <button
+          className={`px-6 py-2 text-white rounded-lg shadow transition disabled:opacity-50 ${
+            isCompleted
+              ? "bg-purple-200 text-purple-800 hover:bg-purple-300"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
+          disabled={
+            !(
+              videoItems.length > 0 &&
+              videoItems.every((_, idx) => expandedItems.includes(idx))
+            ) || isCompleted
+          }
+          onClick={async () => {
+            if (!user) return;
+            await markModuleComplete("module3");
+            setIsCompleted(true);
+          }}
+        >
+          Mark as Complete
+        </button>
+        <button
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition disabled:opacity-50"
+          disabled={
+            !(
+              videoItems.length > 0 &&
+              videoItems.every((_, idx) => expandedItems.includes(idx))
+            )
+          }
+          onClick={async () => {
+            if (!user) return;
+            await markModuleComplete("module3");
+            if (typeof window !== "undefined") {
+              window.location.href = "/dashboard/prayers";
+            }
+          }}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
