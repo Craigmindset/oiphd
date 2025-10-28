@@ -8,6 +8,7 @@ import Module1 from "@/components/admin/module1";
 import Module2 from "@/components/admin/module2";
 import Module3 from "@/components/admin/module3";
 import Prayers from "@/components/admin/prayers";
+import Testimonies from "@/components/admin/testimonies";
 import { Overview } from "@/components/admin/overview";
 import Module1Admin from "@/components/admin/create_content";
 import { AdminFooter } from "@/components/admin/footer";
@@ -49,6 +50,7 @@ export default function AdminDashboardPage() {
               {activeTab === "module2" && <Module2 />}
               {activeTab === "module3" && <Module3 />}
               {activeTab === "prayers" && <Prayers />}
+              {activeTab === "testimonies" && <Testimonies />}
 
               {activeTab === "analytics" && (
                 <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
