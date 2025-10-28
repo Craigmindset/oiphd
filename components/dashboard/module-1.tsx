@@ -91,15 +91,29 @@ export function Module1({
 
   return (
     <div>
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-        Understanding Healing: The Journey of Restoration
+      <h1 className="text-xl md:text-2xl font-bold text-blue-900 mb-2">
+        OIPHD ORIENTATION CONTENT
       </h1>
+      <h2 className="text-lg md:txt-xl font-bold text-gray-900 mb-3">
+        ABOUT OIPHD{" "}
+      </h2>
       <p className="text-gray-600 mb-6 text-justify">
-        This course introduces students to the concept of healing—what it means,
-        how it happens, and why it’s an essential part of human life. It
-        explores healing from physical, emotional, mental, and spiritual
-        perspectives, helping students understand that healing is not just the
-        absence of pain, but the process of becoming whole again.
+        One Sound Institute of Prophecy, Healing & Deliverance. <br /> The One
+        Sound Institute of Prophecy, Healing & Deliverance (OIPHD) is the
+        Healing and Deliverance Ministry established by Prophet Isaiah
+        Macwealth, a vessel anointed by God to bring healing, deliverance, and
+        restoration to the nations. OIPHD serves as a divine platform for the
+        manifestation of God’s power, transforming lives through the ministry of
+        the Word, faith impartation, and the prophetic anointing that brings
+        freedom and lasting change. At the heart of this ministry is the Faith
+        Class — a spiritual institution where faith is built, activated, and
+        strengthened through sound teaching and revelation from God’s Word. It
+        prepares believers for supernatural encounters with the power of God
+        through the ministry of His Prophet, resulting in miracles,
+        breakthroughs, and total restoration. Through its curriculum in healing,
+        deliverance, and breakthrough, thousands have received their miracles
+        and continue to live in their testimonies of God’s enduring power and
+        faithfulness.
       </p>
       {loading ? (
         <p className="text-gray-500">Loading module content...</p>

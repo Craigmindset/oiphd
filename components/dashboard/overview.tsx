@@ -2,24 +2,49 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, CheckCircle, Zap } from "lucide-react";
+import { useModuleProgress } from "@/hooks/use-module-progress";
 
 export function Overview() {
+  const MODULES = ["module1", "module2", "module3"];
+  const { completedModules } = useModuleProgress();
+
+  // Completed Modules: count of completed in module1/module2/module3
+  const completedCount = MODULES.filter((m) =>
+    completedModules.includes(m)
+  ).length;
+
+  // Current Module: 1, 2, or 3 depending on which is not completed, or 3 if all are complete
+  let currentModule = 1;
+  for (let i = 0; i < MODULES.length; i++) {
+    if (!completedModules.includes(MODULES[i])) {
+      currentModule = i + 1;
+      break;
+    }
+    if (i === MODULES.length - 1) {
+      currentModule = 3;
+    }
+  }
+
+  // Active Module: 3 if none completed, 2 if one completed, 1 if two completed, 0 if all completed
+  let activeModule = 3 - completedCount;
+  if (activeModule < 0) activeModule = 0;
+
   const stats = [
     {
       title: "Active Module",
-      value: "0",
+      value: activeModule.toString(),
       icon: BookOpen,
       color: "bg-blue-50 text-blue-600",
     },
     {
       title: "Current Modules",
-      value: "0",
+      value: currentModule.toString(),
       icon: Zap,
       color: "bg-purple-50 text-purple-600",
     },
     {
       title: "Completed Modules",
-      value: "0",
+      value: completedCount.toString(),
       icon: CheckCircle,
       color: "bg-green-50 text-green-600",
     },
