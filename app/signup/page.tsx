@@ -19,6 +19,7 @@ import Select from "react-select";
 import countries from "world-countries";
 import { supabase } from "@/lib/supabaseClient";
 import { Eye, EyeOff } from "lucide-react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const countryOptions = countries.map((country) => ({
@@ -27,6 +28,9 @@ const countryOptions = countries.map((country) => ({
 }));
 
 export default function SignupPage() {
+  const handleClose = () => {
+    router.push("/login");
+  };
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<"question" | 1 | 2 | 3 | 4>(
     "question"
@@ -218,7 +222,19 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50">
+    <div className="min-h-screen flex items-center justify-center bg-blue-50 relative">
+      {/* Close Icon */}
+      <button
+        type="button"
+        aria-label="Close signup"
+        onClick={handleClose}
+        className="absolute top-4 right-4 md:right-32 z-20 p-2 rounded-full flex items-center hover:bg-gray-200 focus:outline-none"
+      >
+        <X size={20} />
+        <span className="hidden md:inline ml-2 text-base font-medium">
+          Close
+        </span>
+      </button>
       <div className="w-full max-w-7xl min-h-[540px] flex flex-col justify-center bg-white rounded-xl shadow-lg p-8">
         {/* Progress Bar */}
         {currentStep !== "question" && (
