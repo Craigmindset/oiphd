@@ -22,15 +22,24 @@ function formatDuration(seconds: number) {
 export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
   const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
+  const [moduleCompleted, setModuleCompleted] = useState(false);
   // Sequential audio unlocking: last completed index
-  const [lastCompletedIndex, setLastCompletedIndex] = useState<number>(-1);
+  const [lastCompletedIndex, setLastCompletedIndex] = useState<number>(() => {
+    // Initialize from localStorage for immediate availability
+    try {
+      const saved = localStorage.getItem(`lastCompleted-${moduleId}`);
+      return saved ? parseInt(saved, 10) : -1;
+    } catch {
+      return -1;
+    }
+  });
   // Fetch expandedItems and lastCompletedIndex from Supabase on mount
   useEffect(() => {
     if (!user || !moduleId) return;
     const fetchProgress = async () => {
       const { data } = await supabase
         .from("module_progress")
-        .select("expanded_items, last_completed_index")
+        .select("expanded_items, last_completed_index, completed")
         .eq("user_id", user.id)
         .eq("module_id", moduleId)
         .single();
@@ -40,6 +49,10 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
         }
         if (typeof data.last_completed_index === "number") {
           setLastCompletedIndex(data.last_completed_index);
+        }
+        // Check if module was previously completed
+        if (data.completed === true) {
+          setModuleCompleted(true);
         }
       }
     };
@@ -159,12 +172,40 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
           // Save progress to localStorage
           setAudioProgress(moduleId, idx, audio.currentTime);
         };
-        const handleEnded = () => {
+        const handleEnded = async () => {
           setPlaybackStates((prev) =>
             prev.map((s, i) => (i === idx ? "idle" : s))
           );
           // Sequential unlock: update lastCompletedIndex if this is the next in sequence
-          setLastCompletedIndex((prev) => (idx === prev + 1 ? idx : prev));
+          setLastCompletedIndex((prev) => {
+            const newIndex = idx === prev + 1 ? idx : prev;
+            // Save to localStorage immediately
+            try {
+              localStorage.setItem(
+                `lastCompleted-${moduleId}`,
+                newIndex.toString()
+              );
+            } catch {}
+
+            // Automatically mark module as complete when all audios are finished
+            if (newIndex >= uniqueAudioItems.length - 1 && user) {
+              setModuleCompleted(true);
+              supabase
+                .from("module_progress")
+                .upsert({
+                  user_id: user.id,
+                  module_id: moduleId,
+                  completed: true,
+                })
+                .then(() => {
+                  console.log(
+                    `Module ${moduleId} automatically marked as complete`
+                  );
+                });
+            }
+
+            return newIndex;
+          });
           // Optionally clear progress on end
           setAudioProgress(moduleId, idx, 0);
         };
@@ -197,8 +238,19 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
   // Create refs for each audio element
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
 
+  // Helper function to check if audio is locked
+  const isAudioLocked = (idx: number) => {
+    const hasBeenPlayed = getAudioProgress(moduleId, idx) > 0;
+    return idx > lastCompletedIndex + 1 && !hasBeenPlayed;
+  };
+
   const handlePlay = (idx: number) => {
-    if (idx > lastCompletedIndex + 1) return; // Prevent playing locked audios
+    // Check if audio has been played before (has saved progress)
+    const hasBeenPlayed = getAudioProgress(moduleId, idx) > 0;
+
+    // Allow play if: it's the next in sequence OR it has been played before
+    if (idx > lastCompletedIndex + 1 && !hasBeenPlayed) return; // Prevent playing locked audios
+
     const audio = audioRefs.current[idx];
     if (audio) {
       audio.play();
@@ -277,7 +329,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                               : "bg-blue-600")
                           }
                           onClick={() => handlePlay(idx)}
-                          disabled={idx > lastCompletedIndex + 1}
+                          disabled={isAudioLocked(idx)}
                         >
                           <Play className="w-3 h-3" />
                         </Button>
@@ -291,7 +343,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                               : "")
                           }
                           onClick={() => handlePause(idx)}
-                          disabled={idx > lastCompletedIndex + 1}
+                          disabled={isAudioLocked(idx)}
                         >
                           <Pause className="w-3 h-3" />
                         </Button>
@@ -300,7 +352,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                           variant="outline"
                           className="h-7 w-7 p-0"
                           onClick={() => handleStop(idx)}
-                          disabled={idx > lastCompletedIndex + 1}
+                          disabled={isAudioLocked(idx)}
                         >
                           <StopCircle className="w-3 h-3" />
                         </Button>
@@ -350,7 +402,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                           : "bg-blue-600")
                       }
                       onClick={() => handlePlay(idx)}
-                      disabled={idx > lastCompletedIndex + 1}
+                      disabled={isAudioLocked(idx)}
                     >
                       <Play className="w-4 h-4" />
                     </Button>
@@ -361,7 +413,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                         playbackStates[idx] === "paused" ? "bg-green-600" : ""
                       }
                       onClick={() => handlePause(idx)}
-                      disabled={idx > lastCompletedIndex + 1}
+                      disabled={isAudioLocked(idx)}
                     >
                       <Pause className="w-4 h-4" />
                     </Button>
@@ -369,7 +421,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                       size="icon"
                       variant="outline"
                       onClick={() => handleStop(idx)}
-                      disabled={idx > lastCompletedIndex + 1}
+                      disabled={isAudioLocked(idx)}
                     >
                       <StopCircle className="w-4 h-4" />
                     </Button>
@@ -378,50 +430,52 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
               </Card>
             ))}
           </div>
-          {/* Next button outside the cards, only show if all audio cards are played (opened) */}
-          <div className="flex justify-end mt-6 gap-4">
+          {/* Completion message */}
+          {moduleCompleted && (
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <h3 className="font-semibold text-green-800">
+                    Module Completed! 🎉
+                  </h3>
+                  <p className="text-sm text-green-700">
+                    Great job! You've finished all audio sessions. Click "Next
+                    Module" to continue.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Next button - only show when all audios are completed */}
+          <div className="flex justify-end mt-6">
             <button
-              className="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition disabled:opacity-50"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
                 !(
-                  audioItems.length > 0 &&
-                  audioItems.every((_, idx) => expandedItems.includes(idx))
+                  uniqueAudioItems.length > 0 &&
+                  lastCompletedIndex >= uniqueAudioItems.length - 1
                 )
               }
-              onClick={async () => {
-                if (!user) return;
-                // Mark module2 as completed in Supabase
-                await supabase.from("module_progress").upsert({
-                  user_id: user.id,
-                  module_id: "module2",
-                  completed: true,
-                });
-              }}
-            >
-              Mark as Complete
-            </button>
-            <button
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition disabled:opacity-50"
-              disabled={
-                !(
-                  audioItems.length > 0 &&
-                  audioItems.every((_, idx) => expandedItems.includes(idx))
-                )
-              }
-              onClick={async () => {
-                if (!user) return;
-                // Mark module2 as completed in Supabase
-                await supabase.from("module_progress").upsert({
-                  user_id: user.id,
-                  module_id: "module2",
-                  completed: true,
-                });
+              onClick={() => {
                 if (typeof window !== "undefined") {
                   window.location.href = "/dashboard/module3";
                 }
               }}
             >
-              Next
+              Next Module
             </button>
           </div>
         </>

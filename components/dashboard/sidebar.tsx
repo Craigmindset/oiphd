@@ -32,7 +32,7 @@ export function Sidebar({
     { id: "module2", label: "Module 2", icon: Headphones },
     { id: "module3", label: "Module 3", icon: Video },
     { id: "prayers", label: "Prayers", icon: Hand },
-    { id: "transformation", label: "Transformation", icon: Zap },
+    { id: "transformation", label: "Testimonies", icon: Zap },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 

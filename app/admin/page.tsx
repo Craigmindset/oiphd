@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
 
   // Listen for setAdminTab event to switch tabs after publishing
   useEffect(() => {
-    function handleSetTab(e) {
+    function handleSetTab(e: any) {
       if (e.detail) setActiveTab(e.detail);
     }
     window.addEventListener("setAdminTab", handleSetTab);
@@ -48,9 +48,21 @@ export default function AdminDashboardPage() {
               )}
               {activeTab === "module1" && <Module1 />}
               {activeTab === "module2" && <Module2 />}
-              {activeTab === "module3" && <Module3 />}
-              {activeTab === "prayers" && <Prayers />}
-              {activeTab === "testimonies" && <Testimonies />}
+              {activeTab === "module3" && (
+                <ProtectedRoute requiredModule="module2">
+                  <Module3 />
+                </ProtectedRoute>
+              )}
+              {activeTab === "prayers" && (
+                <ProtectedRoute requiredModule="module2">
+                  <Prayers />
+                </ProtectedRoute>
+              )}
+              {activeTab === "testimonies" && (
+                <ProtectedRoute requiredModule="module2">
+                  <Testimonies />
+                </ProtectedRoute>
+              )}
 
               {activeTab === "analytics" && (
                 <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
