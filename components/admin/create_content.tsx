@@ -170,10 +170,20 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
           {(contentType === "text" || contentType === "prayer") && (
             <div>
               <label className="block text-sm font-medium mb-1">Content</label>
+              <p className="text-xs text-gray-500 mb-2">
+                You can use HTML tags like{" "}
+                <code className="bg-gray-100 px-1 rounded">&lt;b&gt;</code>,{" "}
+                <code className="bg-gray-100 px-1 rounded">&lt;strong&gt;</code>
+                , <code className="bg-gray-100 px-1 rounded">&lt;em&gt;</code>,{" "}
+                <code className="bg-gray-100 px-1 rounded">&lt;i&gt;</code>,{" "}
+                <code className="bg-gray-100 px-1 rounded">&lt;u&gt;</code>,{" "}
+                <code className="bg-gray-100 px-1 rounded">&lt;br&gt;</code> for
+                formatting
+              </p>
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Enter content"
+                placeholder="Enter content (HTML tags supported)"
                 rows={8}
               />
             </div>

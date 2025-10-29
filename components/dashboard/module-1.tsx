@@ -142,14 +142,10 @@ export function Module1({
                 </button>
                 {expandedItems.includes(index) && (
                   <CardContent className="pt-0 pb-6 px-6 border-t border-gray-200">
-                    {item.content.split(/\n\n/).map((paragraph, idx) => (
-                      <p
-                        key={idx}
-                        className="text-gray-600 leading-relaxed mb-3"
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
+                    <div
+                      className="text-gray-600 leading-relaxed space-y-3"
+                      dangerouslySetInnerHTML={{ __html: item.content }}
+                    />
                   </CardContent>
                 )}
               </Card>
