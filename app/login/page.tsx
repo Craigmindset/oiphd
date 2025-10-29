@@ -52,7 +52,7 @@ export default function LoginPage() {
       {/* Left Column - Image (desktop only) */}
       <div
         className="hidden lg:flex lg:w-1/2 items-center justify-center p-8 bg-cover bg-center"
-        style={{ backgroundImage: "url('/healing-image.jpg')" }}
+        style={{ backgroundImage: "url('/login.jpg')" }}
       ></div>
 
       {/* Right Column - Login Form */}
