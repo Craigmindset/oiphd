@@ -5,14 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export function Prayers() {
-  const audioItems = [
-    { title: "Guided Meditation", duration: "12:34" },
-    { title: "Breathing Exercises", duration: "8:45" },
-    { title: "Affirmations for Healing", duration: "10:20" },
-    { title: "Sleep Relaxation", duration: "15:00" },
-    { title: "Morning Motivation", duration: "7:30" },
-    { title: "Evening Reflection", duration: "9:15" },
-  ];
+  const audioItems = [{ title: "Prophet Prayer", duration: "12:34" }];
 
   return (
     <div>
