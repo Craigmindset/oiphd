@@ -65,35 +65,59 @@ export default function HeroLanding() {
 
   return (
     <section className="relative flex items-center justify-center min-h-screen bg-center bg-cover overflow-hidden">
-      {/* Slider Images */}
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
-            index === currentSlide ? "opacity-100 z-0" : "opacity-0 z-0"
-          }`}
-        >
-          <img
-            src={slide.image}
-            alt={slide.header}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ))}
+      {/* Video Background - Mobile Only */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover z-0 md:hidden"
+        src="https://res.cloudinary.com/dwmrhd0xl/video/upload/v1761778630/An_Evening_with_Jesus_AEJ_Onikan_Stadium___8th_Nov._2025____Prophet_Isaiah_Macwealth_b6kypf.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="/crusade-1.jpg"
+      />
+
+      {/* Slider Images - Desktop Only */}
+      <div className="hidden md:block absolute inset-0 w-full h-full">
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+              index === currentSlide ? "opacity-100 z-0" : "opacity-0 z-0"
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.header}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Dark overlay for contrast */}
       <div className="absolute inset-0 bg-black/50 z-10" />
 
       {/* Content */}
       <div className="relative z-20 text-center px-6">
-        <h1 className="text-white font-extrabold text-4xl sm:text-5xl md:text-4xl leading-tight animate-fade-in">
+        {/* Mobile Content - Static for video */}
+        <h1 className="text-white font-extrabold text-4xl sm:text-5xl leading-tight animate-fade-in md:hidden">
+          AN EVENING WITH JESUS
+        </h1>
+        <h2 className="text-white font-extrabold text-2xl sm:text-3xl leading-tight mt-4 animate-fade-in md:hidden">
+          ONIKAN STADIUM | 8TH NOVEMBER 2025
+        </h2>
+        <p className="mt-5 text-white/90 text-base sm:text-lg max-w-xl mx-auto animate-fade-in md:hidden">
+          Healings | Miracles | Wonders
+        </p>
+
+        {/* Desktop Content - Dynamic from slider */}
+        <h1 className="hidden md:block text-white font-extrabold text-4xl sm:text-5xl md:text-4xl leading-tight animate-fade-in">
           {slides[currentSlide].header}
         </h1>
-        <h2 className="text-white font-extrabold text-3xl sm:text-3xl md:text-4xl leading-tight mt-4 animate-fade-in">
+        <h2 className="hidden md:block text-white font-extrabold text-3xl sm:text-3xl md:text-4xl leading-tight mt-4 animate-fade-in">
           {slides[currentSlide].subheader}
         </h2>
-
-        <p className="mt-5 text-white/90 text-base sm:text-lg max-w-xl mx-auto animate-fade-in">
+        <p className="hidden md:block mt-5 text-white/90 text-base sm:text-lg max-w-xl mx-auto animate-fade-in">
           {slides[currentSlide].description}
         </p>
 
@@ -108,8 +132,8 @@ export default function HeroLanding() {
         </div>
       </div>
 
-      {/* Dots Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {/* Dots Indicator - Desktop Only */}
+      <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-20 gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
