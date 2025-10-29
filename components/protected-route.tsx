@@ -37,6 +37,13 @@ export function ProtectedRoute({
       return;
     }
 
+    // Admins bypass module completion requirements
+    if (user.role === "admin") {
+      setAllowed(true);
+      setLoading(false);
+      return;
+    }
+
     async function checkCompletion() {
       if (!user) return; // Extra safety check for TypeScript
       const { data, error } = await supabase
