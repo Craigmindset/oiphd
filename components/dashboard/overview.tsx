@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, CheckCircle, Zap } from "lucide-react";
 import { useModuleProgress } from "@/hooks/use-module-progress";
+import Link from "next/link";
 
 export function Overview() {
   const MODULES = ["module1", "module2", "module3"];
@@ -52,7 +53,25 @@ export function Overview() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Overview</h1>
+      <h1 className="text-3xl font-bold text-blue-900 mb-5">Overview</h1>
+      <h2 className="text-lg md:text-2xl font-bold text-gray-950 md-6">
+        Welcome to the OIPHD Faith Class.
+      </h2>
+      <p className="text-sm md:text-lg font-normal text-gray-600 italic mb-6">
+        {" "}
+        This dashboard contains your course materials which will prepare you to
+        receive your miracle.
+        <br />
+        Kindly begin with{" "}
+        <Link
+          href="/dashboard/module1"
+          className="text-blue-600 hover:text-blue-800 underline font-semibold"
+        >
+          MODULE 1
+        </Link>
+        , and you can return anytime to continue your course.
+      </p>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
