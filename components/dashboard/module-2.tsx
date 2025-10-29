@@ -19,28 +19,34 @@ function formatDuration(seconds: number) {
     .padStart(2, "0");
   return `${m}:${s}`;
 }
-
 export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
   const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
-  // Fetch expandedItems from Supabase on mount
+  // Sequential audio unlocking: last completed index
+  const [lastCompletedIndex, setLastCompletedIndex] = useState<number>(-1);
+  // Fetch expandedItems and lastCompletedIndex from Supabase on mount
   useEffect(() => {
     if (!user || !moduleId) return;
     const fetchProgress = async () => {
       const { data } = await supabase
         .from("module_progress")
-        .select("expanded_items")
+        .select("expanded_items, last_completed_index")
         .eq("user_id", user.id)
         .eq("module_id", moduleId)
         .single();
-      if (data && Array.isArray(data.expanded_items)) {
-        setExpandedItems(data.expanded_items);
+      if (data) {
+        if (Array.isArray(data.expanded_items)) {
+          setExpandedItems(data.expanded_items);
+        }
+        if (typeof data.last_completed_index === "number") {
+          setLastCompletedIndex(data.last_completed_index);
+        }
       }
     };
     fetchProgress();
   }, [user, moduleId]);
 
-  // Save expandedItems to Supabase when changed
+  // Save expandedItems and lastCompletedIndex to Supabase when changed
   useEffect(() => {
     if (!user || !moduleId) return;
     const saveProgress = async () => {
@@ -48,10 +54,11 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
         user_id: user.id,
         module_id: moduleId,
         expanded_items: expandedItems,
+        last_completed_index: lastCompletedIndex,
       });
     };
-    if (expandedItems.length > 0) saveProgress();
-  }, [expandedItems, user, moduleId]);
+    if (expandedItems.length > 0 || lastCompletedIndex >= 0) saveProgress();
+  }, [expandedItems, lastCompletedIndex, user, moduleId]);
   const [lottieData, setLottieData] = useState<any>(null);
   useEffect(() => {
     fetch("/Sound%20voice%20waves.json")
@@ -64,8 +71,12 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
       title: string;
       content: string;
       duration?: string;
+      thumbnail?: string;
     }[]
   >([]);
+
+  // Random thumbnail images
+  const thumbnailImages = ["/img3.jpg", "/img1%20(4).jpg", "/img2.jpg"];
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // playbackStates: 'idle' | 'playing' | 'paused'
@@ -90,7 +101,13 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
         setDurations([]);
         setCurrentTimes([]);
       } else {
-        setAudioItems(data || []);
+        // Assign random thumbnails to each audio item
+        const itemsWithThumbnails = (data || []).map((item) => ({
+          ...item,
+          thumbnail:
+            thumbnailImages[Math.floor(Math.random() * thumbnailImages.length)],
+        }));
+        setAudioItems(itemsWithThumbnails);
         setPlaybackStates((data || []).map(() => "idle"));
         setDurations((data || []).map(() => 0));
         setCurrentTimes((data || []).map(() => 0));
@@ -99,6 +116,23 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
     }
     fetchAudioItems();
   }, []);
+
+  // Helper: get and set playback position in localStorage
+  function getAudioProgress(moduleId: string, idx: number) {
+    try {
+      const key = `audio-progress-${moduleId}-${idx}`;
+      const value = localStorage.getItem(key);
+      return value ? parseFloat(value) : 0;
+    } catch {
+      return 0;
+    }
+  }
+  function setAudioProgress(moduleId: string, idx: number, time: number) {
+    try {
+      const key = `audio-progress-${moduleId}-${idx}`;
+      localStorage.setItem(key, time.toString());
+    } catch {}
+  }
 
   // Listen for loadedmetadata to get duration and timeupdate for countdown
   useEffect(() => {
@@ -110,6 +144,11 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
             next[idx] = audio.duration;
             return next;
           });
+          // Restore progress from localStorage
+          const savedTime = getAudioProgress(moduleId, idx);
+          if (savedTime > 0 && savedTime < audio.duration) {
+            audio.currentTime = savedTime;
+          }
         };
         const handleTimeUpdate = () => {
           setCurrentTimes((prev) => {
@@ -117,11 +156,17 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
             next[idx] = audio.currentTime;
             return next;
           });
+          // Save progress to localStorage
+          setAudioProgress(moduleId, idx, audio.currentTime);
         };
         const handleEnded = () => {
           setPlaybackStates((prev) =>
             prev.map((s, i) => (i === idx ? "idle" : s))
           );
+          // Sequential unlock: update lastCompletedIndex if this is the next in sequence
+          setLastCompletedIndex((prev) => (idx === prev + 1 ? idx : prev));
+          // Optionally clear progress on end
+          setAudioProgress(moduleId, idx, 0);
         };
         audio.addEventListener("loadedmetadata", handleLoadedMetadata);
         audio.addEventListener("timeupdate", handleTimeUpdate);
@@ -133,6 +178,11 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
             next[idx] = audio.duration;
             return next;
           });
+          // Restore progress from localStorage
+          const savedTime = getAudioProgress(moduleId, idx);
+          if (savedTime > 0 && savedTime < audio.duration) {
+            audio.currentTime = savedTime;
+          }
         }
         // Cleanup
         return () => {
@@ -148,6 +198,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
 
   const handlePlay = (idx: number) => {
+    if (idx > lastCompletedIndex + 1) return; // Prevent playing locked audios
     const audio = audioRefs.current[idx];
     if (audio) {
       audio.play();
@@ -177,6 +228,11 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
     }
   };
 
+  // Remove duplicate audio items by title
+  const uniqueAudioItems = audioItems.filter(
+    (item, idx, arr) => arr.findIndex((i) => i.title === item.title) === idx
+  );
+
   return (
     <div>
       <h1 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-8">
@@ -189,21 +245,19 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
       ) : (
         <>
           <div className="space-y-3">
-            {audioItems.map((item, idx) => (
+            {uniqueAudioItems.map((item, idx) => (
               <Card
-                key={item.item_number}
+                key={`${item.item_number}-${idx}`}
                 className="hover:shadow-md transition-shadow rounded-lg"
               >
                 <CardContent className="py-1 px-2 md:p-4 flex flex-col md:flex-row md:items-center md:justify-between min-h-0">
                   <div className="flex items-center gap-2 md:gap-4 w-full min-h-0">
-                    <div className="w-7 h-7 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 md:w-6 md:h-6 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3V9h4v3h3l-5 5z" />
-                      </svg>
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shrink-0">
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="flex-1 min-h-0">
                       <h3 className="font-semibold text-gray-900 text-sm md:text-base">
@@ -223,6 +277,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                               : "bg-blue-600")
                           }
                           onClick={() => handlePlay(idx)}
+                          disabled={idx > lastCompletedIndex + 1}
                         >
                           <Play className="w-3 h-3" />
                         </Button>
@@ -236,6 +291,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                               : "")
                           }
                           onClick={() => handlePause(idx)}
+                          disabled={idx > lastCompletedIndex + 1}
                         >
                           <Pause className="w-3 h-3" />
                         </Button>
@@ -244,6 +300,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                           variant="outline"
                           className="h-7 w-7 p-0"
                           onClick={() => handleStop(idx)}
+                          disabled={idx > lastCompletedIndex + 1}
                         >
                           <StopCircle className="w-3 h-3" />
                         </Button>
@@ -293,6 +350,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                           : "bg-blue-600")
                       }
                       onClick={() => handlePlay(idx)}
+                      disabled={idx > lastCompletedIndex + 1}
                     >
                       <Play className="w-4 h-4" />
                     </Button>
@@ -303,6 +361,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                         playbackStates[idx] === "paused" ? "bg-green-600" : ""
                       }
                       onClick={() => handlePause(idx)}
+                      disabled={idx > lastCompletedIndex + 1}
                     >
                       <Pause className="w-4 h-4" />
                     </Button>
@@ -310,6 +369,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                       size="icon"
                       variant="outline"
                       onClick={() => handleStop(idx)}
+                      disabled={idx > lastCompletedIndex + 1}
                     >
                       <StopCircle className="w-4 h-4" />
                     </Button>
