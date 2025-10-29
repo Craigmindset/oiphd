@@ -287,9 +287,18 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-8">
-        Module 2: Audio Sessions
+      <h1 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-3">
+        Module 2: <br />{" "}
+        <span className="text-xl md:text-2xl font-normal text-gray-600 ">
+          Audio Teaching Resources
+        </span>
       </h1>
+      <p className="mb-5 text-red-800 text-justify">
+        {" "}
+        These teaching resources have been put together for your listening and
+        meditation. Ensure you play each message, take notes, meditate and pray
+        with the revelation from each teaching.{" "}
+      </p>
       {loading ? (
         <p className="text-gray-500">Loading audio items...</p>
       ) : error ? (
