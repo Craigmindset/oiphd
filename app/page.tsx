@@ -7,34 +7,28 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const slides = [
   {
+    image: "/slide1.jpg",
+    header: " THE MASTER JESUS STILL HEALS TODAY.",
+    subheader: "Experience His touch today",
+    description: "",
+  },
+  {
+    image: "/slide2.jpg",
+    header: "YOU CAN BE FREE, HEALED AND DELIVERED",
+    subheader: "Receive the touch of Master Jesus!",
+    description: "",
+  },
+  {
+    image: "/slide3.jpg",
+    header: "THE TRUTH SHALL MAKE YOU FREE!",
+    subheader: "Receive your Miracle today!",
+    description: "",
+  },
+  {
     image: "/crusade-1.jpg",
     header: "AN EVENING WITH JESUS",
     subheader: "ONIKAN STADIUM | 8TH NOVEMBER 2025",
     description: "Healings | Miracles | Wonders",
-  },
-  {
-    image: "/slide1.jpg",
-    header: "EXPERIENCE GOD'S POWER",
-    subheader: "FAITH CLASS - TRANSFORM YOUR LIFE",
-    description: "Join thousands in supernatural encounters",
-  },
-  {
-    image: "/slide2.jpg",
-    header: "PROPHET ISAIAH MACWEALTH",
-    subheader: "ONE SOUND INSTITUTE",
-    description: "Building faith through sound teaching and revelation",
-  },
-  {
-    image: "/slide3.jpg",
-    header: "HEALING & DELIVERANCE",
-    subheader: "MINISTRY OF BREAKTHROUGH",
-    description: "Receive your miracle and live in your testimony",
-  },
-  {
-    image: "/slide4.jpg",
-    header: "FAITH CLASS AWAITS YOU",
-    subheader: "START YOUR JOURNEY TODAY",
-    description: "Prepare for supernatural encounters with God's power",
   },
 ];
 
@@ -92,7 +86,7 @@ export default function HeroLanding() {
 
       {/* Content */}
       <div className="relative z-20 text-center px-6">
-        <h1 className="text-white font-extrabold text-4xl sm:text-5xl md:text-6xl leading-tight animate-fade-in">
+        <h1 className="text-white font-extrabold text-4xl sm:text-5xl md:text-4xl leading-tight animate-fade-in">
           {slides[currentSlide].header}
         </h1>
         <h2 className="text-white font-extrabold text-3xl sm:text-3xl md:text-4xl leading-tight mt-4 animate-fade-in">
@@ -109,7 +103,7 @@ export default function HeroLanding() {
             className="border-2 border-white text-white bg-transparent hover:bg-white/10 px-6 py-2 text-base rounded-md transition"
             onClick={() => router.push("/login")}
           >
-            BEGIN FAITH CLASS
+            BEGIN HERE
           </Button>
         </div>
       </div>
