@@ -83,6 +83,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
       item_number: number;
       title: string;
       content: string;
+      category?: string;
       duration?: string;
       thumbnail?: string;
     }[]
@@ -103,7 +104,7 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
       setError(null);
       const { data, error } = await supabase
         .from("module_content")
-        .select("item_number, title, content")
+        .select("item_number, title, content, category")
         .eq("module_number", 2)
         .eq("content_type", "audio")
         .order("item_number", { ascending: true });
@@ -114,16 +115,30 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
         setDurations([]);
         setCurrentTimes([]);
       } else {
+        // Sort by category order: Faith, Healing, Deliverance, then by item_number
+        const categoryOrder = { Faith: 1, Healing: 2, Deliverance: 3 };
+        const sortedData = (data || []).sort((a, b) => {
+          const aCategoryOrder =
+            categoryOrder[a.category as keyof typeof categoryOrder] || 999;
+          const bCategoryOrder =
+            categoryOrder[b.category as keyof typeof categoryOrder] || 999;
+
+          if (aCategoryOrder !== bCategoryOrder) {
+            return aCategoryOrder - bCategoryOrder;
+          }
+          return a.item_number - b.item_number;
+        });
+
         // Assign random thumbnails to each audio item
-        const itemsWithThumbnails = (data || []).map((item) => ({
+        const itemsWithThumbnails = sortedData.map((item) => ({
           ...item,
           thumbnail:
             thumbnailImages[Math.floor(Math.random() * thumbnailImages.length)],
         }));
         setAudioItems(itemsWithThumbnails);
-        setPlaybackStates((data || []).map(() => "idle"));
-        setDurations((data || []).map(() => 0));
-        setCurrentTimes((data || []).map(() => 0));
+        setPlaybackStates(sortedData.map(() => "idle"));
+        setDurations(sortedData.map(() => 0));
+        setCurrentTimes(sortedData.map(() => 0));
       }
       setLoading(false);
     }
@@ -321,9 +336,16 @@ export function Module2({ moduleId = "module2" }: { moduleId?: string }) {
                       />
                     </div>
                     <div className="flex-1 min-h-0">
-                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                        {item.title}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                          {item.title}
+                        </h3>
+                        {item.category && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                            {item.category}
+                          </span>
+                        )}
+                      </div>
                       {item.duration && (
                         <p className="text-xs text-gray-500">{item.duration}</p>
                       )}

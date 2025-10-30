@@ -13,13 +13,14 @@ export default function Module2Admin() {
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [editCategory, setEditCategory] = useState("");
   const [editLoading, setEditLoading] = useState(false);
 
   const fetchCards = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("module_content")
-      .select("id, item_number, title, content, content_type")
+      .select("id, item_number, title, content, content_type, category")
       .eq("content_type", "audio")
       .order("item_number", { ascending: true });
     if (error) {
@@ -54,27 +55,56 @@ export default function Module2Admin() {
                     setEditLoading(true);
                     const { error } = await supabase
                       .from("module_content")
-                      .update({ title: editTitle, content: editContent })
+                      .update({
+                        title: editTitle,
+                        content: editContent,
+                        category: editCategory,
+                      })
                       .eq("id", card.id);
                     setEditLoading(false);
                     setEditIndex(null);
                     setEditTitle("");
                     setEditContent("");
+                    setEditCategory("");
                     fetchCards();
                   }}
                   className="space-y-2"
                 >
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    placeholder="Title"
-                    className="mb-2"
-                  />
-                  <Input
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    placeholder="Audio URL"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Title
+                    </label>
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Title"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Audio URL
+                    </label>
+                    <Input
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      placeholder="Audio URL"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Category
+                    </label>
+                    <select
+                      className="w-full border rounded px-3 py-2 text-sm"
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                    >
+                      <option value="">Select category...</option>
+                      <option value="Faith">Faith</option>
+                      <option value="Healing">Healing</option>
+                      <option value="Deliverance">Deliverance</option>
+                    </select>
+                  </div>
                   <div className="flex gap-2 mt-2">
                     <Button type="submit" disabled={editLoading}>
                       {editLoading ? "Saving..." : "Save"}
@@ -82,7 +112,12 @@ export default function Module2Admin() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setEditIndex(null)}
+                      onClick={() => {
+                        setEditIndex(null);
+                        setEditTitle("");
+                        setEditContent("");
+                        setEditCategory("");
+                      }}
                     >
                       Cancel
                     </Button>
@@ -92,12 +127,19 @@ export default function Module2Admin() {
                 <>
                   <audio controls src={card.content} className="w-full mb-2" />
                   <div className="flex items-center gap-2 mb-2 justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-500">
-                        Item: {card.item_number}
-                      </span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-500">
+                          Item: {card.item_number}
+                        </span>
+                        {card.category && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                            {card.category}
+                          </span>
+                        )}
+                      </div>
                       <CardTitle className="text-sm m-0 p-0">
-                        {editIndex === idx ? "Edit Card" : card.title}
+                        {card.title}
                       </CardTitle>
                     </div>
                     <div className="flex gap-2">
@@ -108,6 +150,7 @@ export default function Module2Admin() {
                           setEditIndex(idx);
                           setEditTitle(card.title);
                           setEditContent(card.content);
+                          setEditCategory(card.category || "");
                         }}
                       >
                         Edit

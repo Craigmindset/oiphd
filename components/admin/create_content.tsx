@@ -20,6 +20,7 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [contentType, setContentType] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedCard, setPublishedCard] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
           title,
           content_type: contentType,
           content,
+          category: contentType === "audio" ? category : null,
         },
       ])
       .select()
@@ -157,6 +159,7 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
               onChange={(e) => {
                 setContentType(e.target.value);
                 setContent("");
+                setCategory("");
               }}
             >
               <option value="">Select type...</option>
@@ -166,6 +169,24 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
               <option value="prayer">Prayer</option>
             </select>
           </div>
+
+          {/* Category selector - only show for audio */}
+          {contentType === "audio" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Category</label>
+              <select
+                className="w-full border rounded px-3 py-2 text-sm md:text-sm font-light"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Select category...</option>
+                <option value="Faith">Faith</option>
+                <option value="Healing">Healing</option>
+                <option value="Deliverance">Deliverance</option>
+              </select>
+            </div>
+          )}
+
           {/* Content input, shown only if contentType is selected */}
           {(contentType === "text" || contentType === "prayer") && (
             <div>
@@ -352,6 +373,7 @@ export default function CreateContent({ setActiveTab }: CreateContentProps) {
               !title.trim() ||
               !contentType ||
               !content.trim() ||
+              (contentType === "audio" && !category) ||
               (contentType === "audio" &&
                 !/\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(content))
             }
