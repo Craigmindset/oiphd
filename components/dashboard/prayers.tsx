@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Play, Pause, StopCircle, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ function formatDuration(seconds: number) {
 }
 
 export function Prayers() {
+  const router = useRouter();
   const audioItems = [
     {
       title: "Mass Prayer",
@@ -234,6 +236,17 @@ export function Prayers() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Share Testimony Button */}
+      <div className="flex justify-end mt-6">
+        <Button
+          variant="outline"
+          className="bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+          onClick={() => router.push("/dashboard/transformation")}
+        >
+          Share Testimony
+        </Button>
       </div>
 
       {/* Prayer Image Modal - Only renders when showModal is true */}
