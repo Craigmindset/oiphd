@@ -59,6 +59,9 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
+    // Also send back the session data so client can store it
+    response.headers.set("X-Supabase-Session", JSON.stringify(signInData.session));
+
     return response;
   } catch (error) {
     console.error("Login error:", error);
