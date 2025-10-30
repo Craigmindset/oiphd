@@ -59,9 +59,8 @@ export function Transformation() {
         Share Your Testimony
       </h1>
       <p className="mb-5">
-        Ignite your faith with these testimonies of healing, liberating and
-        transforming touch of the Lord Jesus, through the ministration of His
-        servant, Prophet Isaiah Macwealth.
+        Have you experienced a change in your body or circumstances since you
+        began attending this course? Share your testimony.
       </p>
       <Card className="max-w-4xl justify-center">
         <CardHeader>
