@@ -98,7 +98,6 @@ export function Module1({
         ABOUT OIPHD{" "}
       </h2>
       <p className="text-gray-600 mb-6 text-justify">
-        One Sound Institute of Prophecy, Healing & Deliverance. <br /> The One
         Sound Institute of Prophecy, Healing & Deliverance (OIPHD) is the
         Healing and Deliverance Ministry established by Prophet Isaiah
         Macwealth, a vessel anointed by God to bring healing, deliverance, and
