@@ -34,8 +34,22 @@ export function Prayers() {
   const [showModal, setShowModal] = useState(false);
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
 
+  // Cleanup on unmount - stop all audio
+  useEffect(() => {
+    return () => {
+      audioRefs.current.forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+    };
+  }, []);
+
   // Listen for audio metadata and time updates
   useEffect(() => {
+    const cleanupFunctions: (() => void)[] = [];
+
     audioRefs.current.forEach((audio, idx) => {
       if (audio) {
         const handleLoadedMetadata = () => {
@@ -56,6 +70,7 @@ export function Prayers() {
           setPlaybackStates((prev) =>
             prev.map((s, i) => (i === idx ? "idle" : s))
           );
+          setShowModal(false);
         };
 
         audio.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -71,15 +86,20 @@ export function Prayers() {
           });
         }
 
-        // Cleanup
-        return () => {
+        // Store cleanup function
+        cleanupFunctions.push(() => {
           audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
           audio.removeEventListener("timeupdate", handleTimeUpdate);
           audio.removeEventListener("ended", handleEnded);
-        };
+        });
       }
     });
-  }, [audioItems]);
+
+    // Cleanup all event listeners
+    return () => {
+      cleanupFunctions.forEach((cleanup) => cleanup());
+    };
+  }, []);
 
   const handlePlay = (idx: number) => {
     const audio = audioRefs.current[idx];
@@ -88,7 +108,7 @@ export function Prayers() {
       setPlaybackStates((prev) =>
         prev.map((s, i) => (i === idx ? "playing" : s))
       );
-      setShowModal(true); // Show modal when play is clicked
+      setShowModal(true);
     }
   };
 
@@ -108,12 +128,16 @@ export function Prayers() {
       audio.pause();
       audio.currentTime = 0;
       setPlaybackStates((prev) => prev.map((s, i) => (i === idx ? "idle" : s)));
-      setShowModal(false); // Close modal when stopped
+      setShowModal(false);
     }
   };
 
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   return (
-    <div>
+    <div className="relative">
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Prayer Session</h1>
 
       {/* Header Message */}
@@ -212,11 +236,11 @@ export function Prayers() {
         ))}
       </div>
 
-      {/* Prayer Image Modal */}
+      {/* Prayer Image Modal - Only renders when showModal is true */}
       {showModal && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowModal(false)}
+          className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4"
+          onClick={closeModal}
         >
           <div
             className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden"
@@ -224,7 +248,7 @@ export function Prayers() {
           >
             {/* Close Button */}
             <button
-              onClick={() => setShowModal(false)}
+              onClick={closeModal}
               className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition"
               aria-label="Close modal"
             >
