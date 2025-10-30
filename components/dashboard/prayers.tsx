@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, StopCircle } from "lucide-react";
+import { Play, Pause, StopCircle, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +31,7 @@ export function Prayers() {
   const [currentTimes, setCurrentTimes] = useState<number[]>(
     audioItems.map(() => 0)
   );
+  const [showModal, setShowModal] = useState(false);
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
 
   // Listen for audio metadata and time updates
@@ -87,6 +88,7 @@ export function Prayers() {
       setPlaybackStates((prev) =>
         prev.map((s, i) => (i === idx ? "playing" : s))
       );
+      setShowModal(true); // Show modal when play is clicked
     }
   };
 
@@ -106,12 +108,31 @@ export function Prayers() {
       audio.pause();
       audio.currentTime = 0;
       setPlaybackStates((prev) => prev.map((s, i) => (i === idx ? "idle" : s)));
+      setShowModal(false); // Close modal when stopped
     }
   };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Prayer Session</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">Prayer Session</h1>
+
+      {/* Header Message */}
+      <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-600 rounded-r-lg">
+        <p className="text-base md:text-lg text-gray-800 leading-relaxed mb-3">
+          <span className="font-semibold text-blue-900">
+            Open up your heart in faith
+          </span>{" "}
+          as you receive these powerful declarations from the prophet of God.
+        </p>
+        <p className="text-base md:text-lg text-gray-800 leading-relaxed">
+          As you engage these words of prayer,{" "}
+          <span className="font-semibold text-blue-900">
+            receive your healing, breakthrough, and deliverance
+          </span>{" "}
+          in the name of Jesus!
+        </p>
+      </div>
+
       <div className="space-y-4">
         {audioItems.map((item, idx) => (
           <Card key={idx} className="hover:shadow-md transition-shadow">
@@ -190,6 +211,42 @@ export function Prayers() {
           </Card>
         ))}
       </div>
+
+      {/* Prayer Image Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition"
+              aria-label="Close modal"
+            >
+              <X className="w-6 h-6 text-gray-700" />
+            </button>
+
+            {/* Prayer Image - Desktop */}
+            <img
+              src="/Prayer Image.jpg"
+              alt="Prayer"
+              className="hidden md:block w-full h-auto"
+            />
+
+            {/* Prayer Image - Mobile */}
+            <img
+              src="/prayer-mobile.jpg"
+              alt="Prayer"
+              className="block md:hidden w-full h-auto"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
