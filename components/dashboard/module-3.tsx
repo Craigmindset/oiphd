@@ -89,9 +89,19 @@ export function Module3({ moduleId = "module3" }: { moduleId?: string }) {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        Module 3: Video Sessions
+      <h1 className="text-2xl  md:text-3xl font-bold text-gray-900 mb-3">
+        Module 3: <br />{" "}
+        <span className="text-xl md:text-2xl font-normal text-gray-600 ">
+          Video Session
+        </span>
       </h1>
+      <p className="mb-5 text-red-800 text-justify">
+        {" "}
+        Ignite your faith with these testimonies of healing, liberating and
+        transforming touch of the Lord Jesus, through the ministration of His
+        servant, Prophet Isaiah Macwealth.{" "}
+      </p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videoItems.map((item, index) => (
           <Dialog key={item.item_number || index}>
