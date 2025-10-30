@@ -55,10 +55,17 @@ export function Transformation() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Transformation</h1>
+      <h1 className=" text-2xl md:text-3xl font-bold text-gray-900 mb-5">
+        Share Your Testimony
+      </h1>
+      <p className="mb-5">
+        Ignite your faith with these testimonies of healing, liberating and
+        transforming touch of the Lord Jesus, through the ministration of His
+        servant, Prophet Isaiah Macwealth.
+      </p>
       <Card className="max-w-4xl justify-center">
         <CardHeader>
-          <CardTitle>Share Your Testimony</CardTitle>
+          <CardTitle> Testimony Card</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,7 +90,7 @@ export function Transformation() {
                 htmlFor="before"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Before Evening with Jesus{" "}
+                Your Experience before attending this course{" "}
                 <span className="text-red-600">*</span>
               </label>
               <textarea
@@ -101,7 +108,7 @@ export function Transformation() {
                 htmlFor="after"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Experience After Evening with Jesus{" "}
+                Your experience after attending the course{" "}
                 <span className="text-red-600">*</span>
               </label>
               <textarea
@@ -121,17 +128,26 @@ export function Transformation() {
               >
                 How would you rate the experience?
               </label>
+              <p className="text-xs md:text-sm mb-3">
+                What did you enjoy about the school?
+              </p>
               <select
                 id="rating"
                 value={rating}
                 onChange={(e) => setRating(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm"
                 required
               >
                 <option value="">Select rating</option>
-                <option value="Excellent">Excellent</option>
-                <option value="Very Good">Very Good</option>
-                <option value="Fair">Fair</option>
+                <option value="The simplicity of the course">
+                  Course simplicity
+                </option>
+                <option value="The deep revelation in the teaching resources">
+                  Deep revelation in teaching
+                </option>
+                <option value="The ambience of the site">Site ambience</option>
+                <option value="The ease of navigation">Easy navigation</option>
+                <option value="Others">Others</option>
               </select>
             </div>
             {error && <div className="text-red-600 text-sm">{error}</div>}
