@@ -1,10 +1,8 @@
 "use client";
 
+import { Settings } from "@/components/dashboard/settings";
+import { ProtectedRoute } from "@/components/protected-route";
+
 export default function SettingsPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">Settings</h1>
-      {/* Add your settings content here */}
-    </div>
-  );
+  return <Settings />;
 }

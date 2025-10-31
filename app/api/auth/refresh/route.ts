@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Get user from Supabase using the new access token
     const { data: userData, error: userError } =
       await adminSupabase.auth.getUser(access_token);
-    
+
     if (userError || !userData.user) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .select("id, email, first_name, last_name, role")
       .eq("id", userData.user.id)
       .single();
-    
+
     if (profileError || !profile) {
       return NextResponse.json(
         { error: "User profile not found" },

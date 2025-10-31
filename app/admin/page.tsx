@@ -11,6 +11,7 @@ import Prayers from "@/components/admin/prayers";
 import Testimonies from "@/components/admin/testimonies";
 import { Overview } from "@/components/admin/overview";
 import Module1Admin from "@/components/admin/create_content";
+import { Settings } from "@/components/admin/settings";
 import { AdminFooter } from "@/components/admin/footer";
 import { ProtectedRoute } from "@/components/protected-route";
 
@@ -64,16 +65,12 @@ export default function AdminDashboardPage() {
                 </ProtectedRoute>
               )}
 
-              {activeTab === "analytics" && (
-                <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                  <p>Analytics section coming soon</p>
-                </div>
-              )}
               {activeTab === "settings" && (
                 <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                  <p>Settings section coming soon</p>
+                  <Settings />
                 </div>
               )}
+              {activeTab === "settings" && <Settings />}
             </div>
           </main>
 

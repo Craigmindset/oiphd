@@ -60,7 +60,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Also send back the session data so client can store it
-    response.headers.set("X-Supabase-Session", JSON.stringify(signInData.session));
+    response.headers.set(
+      "X-Supabase-Session",
+      JSON.stringify(signInData.session)
+    );
 
     return response;
   } catch (error) {

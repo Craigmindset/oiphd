@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (event === "TOKEN_REFRESHED") {
           console.log("Token refreshed successfully");
-          
+
           // Update the cookie with the new token
           if (session?.access_token) {
             try {
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const userData = await response.json();
-      
+
       // Get session from response header and set it in Supabase client
       const sessionHeader = response.headers.get("X-Supabase-Session");
       if (sessionHeader) {
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error("Failed to set Supabase session:", error);
         }
       }
-      
+
       setUser(userData);
     } catch (error: any) {
       setIsLoading(false);
@@ -160,10 +160,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      
+
       // Also sign out from Supabase client to clear local session
       await supabase.auth.signOut();
-      
+
       setUser(null);
     } finally {
       setIsLoading(false);
