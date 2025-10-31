@@ -97,23 +97,27 @@ export function Module1({
       <h2 className="text-lg md:txt-xl font-bold text-gray-900 mb-3">
         ABOUT OIPHD{" "}
       </h2>
-      <p className="text-gray-600 mb-6 text-justify">
-        Sound Institute of Prophecy, Healing & Deliverance (OIPHD) is the
-        Healing and Deliverance Ministry established by Prophet Isaiah
-        Macwealth, a vessel anointed by God to bring healing, deliverance, and
+      <p className="text-gray-600 mb-2 text-justify mx-3 leading-relaxed">
+        One Sound Institute of Prophecy, Healing & Deliverance (OIPHD) is the
+        Healing and Deliverance Ministry established by Prophet Isaiah Macwealth
+        — a vessel anointed by God to bring healing, deliverance, and
         restoration to the nations. OIPHD serves as a divine platform for the
         manifestation of God’s power, transforming lives through the ministry of
         the Word, faith impartation, and the prophetic anointing that brings
-        freedom and lasting change. At the heart of this ministry is the Faith
-        Class — a spiritual institution where faith is built, activated, and
-        strengthened through sound teaching and revelation from God’s Word. It
-        prepares believers for supernatural encounters with the power of God
-        through the ministry of His Prophet, resulting in miracles,
-        breakthroughs, and total restoration. Through its curriculum in healing,
-        deliverance, and breakthrough, thousands have received their miracles
-        and continue to live in their testimonies of God’s enduring power and
-        faithfulness.
+        freedom and lasting change.
       </p>
+      <p className="text-gray-600 mb-6 text-justify mx-3 leading-relaxed">
+        {" "}
+        At the heart of this ministry is the Faith Class — a spiritual
+        institution where faith is built, activated, and strengthened through
+        sound teaching and revelation from God’s Word. It prepares believers for
+        supernatural encounters with the power of God through the ministry of
+        His Prophet, resulting in miracles, breakthroughs, and total
+        restoration. Through its curriculum in healing, deliverance, and
+        breakthrough, thousands have received their miracles and continue to
+        live in their testimonies of God’s enduring power and faithfulness.
+      </p>
+
       {loading ? (
         <p className="text-gray-500">Loading module content...</p>
       ) : error ? (
