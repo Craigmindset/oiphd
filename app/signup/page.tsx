@@ -153,7 +153,7 @@ export default function SignupPage() {
         setIsSubmitting(false);
         return false;
       }
-      setSuccessMessage("Registration successful! Redirecting to login...");
+      setSuccessMessage("Registration successful! please check your email.");
       setTimeout(() => {
         router.push("/login");
       }, 2000);
@@ -403,7 +403,7 @@ export default function SignupPage() {
                           type="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          placeholder="you@example.com"
+                          placeholder="use a valid email address"
                           required
                         />
                       </div>
