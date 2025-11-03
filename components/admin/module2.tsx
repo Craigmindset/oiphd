@@ -14,6 +14,7 @@ export default function Module2Admin() {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editCategory, setEditCategory] = useState("");
+  const [editItemNumber, setEditItemNumber] = useState("");
   const [editLoading, setEditLoading] = useState(false);
 
   const fetchCards = async () => {
@@ -56,6 +57,8 @@ export default function Module2Admin() {
                     const { error } = await supabase
                       .from("module_content")
                       .update({
+                        item_number:
+                          parseInt(editItemNumber) || card.item_number,
                         title: editTitle,
                         content: editContent,
                         category: editCategory,
@@ -63,6 +66,7 @@ export default function Module2Admin() {
                       .eq("id", card.id);
                     setEditLoading(false);
                     setEditIndex(null);
+                    setEditItemNumber("");
                     setEditTitle("");
                     setEditContent("");
                     setEditCategory("");
@@ -70,6 +74,17 @@ export default function Module2Admin() {
                   }}
                   className="space-y-2"
                 >
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Item Number
+                    </label>
+                    <Input
+                      type="number"
+                      value={editItemNumber}
+                      onChange={(e) => setEditItemNumber(e.target.value)}
+                      placeholder="Item Number"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Title
@@ -114,6 +129,7 @@ export default function Module2Admin() {
                       variant="outline"
                       onClick={() => {
                         setEditIndex(null);
+                        setEditItemNumber("");
                         setEditTitle("");
                         setEditContent("");
                         setEditCategory("");
@@ -148,6 +164,7 @@ export default function Module2Admin() {
                         variant="outline"
                         onClick={() => {
                           setEditIndex(idx);
+                          setEditItemNumber(card.item_number?.toString() || "");
                           setEditTitle(card.title);
                           setEditContent(card.content);
                           setEditCategory(card.category || "");
