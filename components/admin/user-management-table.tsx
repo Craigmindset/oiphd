@@ -13,7 +13,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface UserProfile {
   id: string;
-  registering_for_someone: boolean | null;
+  registering_for_someone: string | boolean | null;
   first_name: string | null;
   last_name: string | null;
   gender: string | null;
@@ -31,6 +31,16 @@ export function UserManagementTable() {
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
+
+  // Helper function to determine if registering for someone
+  const isRegisteringForSomeone = (value: string | boolean | null): boolean => {
+    if (value === null || value === undefined) return false;
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.toLowerCase() === "yes";
+    return false;
+  };
 
   useEffect(() => {
     const fetchUsersAndProgress = async () => {
@@ -90,6 +100,21 @@ export function UserManagementTable() {
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
   // CSV Export
   const handleExportCSV = () => {
     const headers = [
@@ -107,7 +132,7 @@ export function UserManagementTable() {
     ];
     const rows = filteredUsers.map((user: UserProfile, idx: number) => [
       idx + 1,
-      user.registering_for_someone ? "Yes" : "No",
+      isRegisteringForSomeone(user.registering_for_someone) ? "Yes" : "No",
       `${user.first_name || ""} ${user.last_name || ""}`.trim(),
       user.gender || "",
       user.email || "",
@@ -155,7 +180,7 @@ export function UserManagementTable() {
     ];
     const rows = filteredUsers.map((user: UserProfile, idx: number) => [
       idx + 1,
-      user.registering_for_someone ? "Yes" : "No",
+      isRegisteringForSomeone(user.registering_for_someone) ? "Yes" : "No",
       `${user.first_name || ""} ${user.last_name || ""}`.trim(),
       user.gender || "",
       user.email || "",
@@ -203,6 +228,84 @@ export function UserManagementTable() {
 
       {/* Table */}
       <Card className="overflow-hidden">
+        {/* Pagination Controls - Top */}
+        {!loading && !error && filteredUsers.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="text-sm text-gray-700">
+              Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
+              <span className="font-semibold">
+                {Math.min(endIndex, filteredUsers.length)}
+              </span>{" "}
+              of <span className="font-semibold">{filteredUsers.length}</span>{" "}
+              users
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(pageNum)}
+                      className="w-10"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto max-w-full">
           {loading ? (
             <div className="p-8 text-center text-gray-500">
@@ -250,14 +353,16 @@ export function UserManagementTable() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((user, idx) => (
+                {currentUsers.map((user, idx) => (
                   <tr
                     key={user.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-4 py-3">{idx + 1}</td>
+                    <td className="px-4 py-3">{startIndex + idx + 1}</td>
                     <td className="px-4 py-3">
-                      {user.registering_for_someone ? "Yes" : "No"}
+                      {isRegisteringForSomeone(user.registering_for_someone)
+                        ? "Yes"
+                        : "No"}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 text-sm">
                       {user.first_name} {user.last_name}
@@ -304,6 +409,84 @@ export function UserManagementTable() {
             <p className="text-gray-500">
               No users found matching your search.
             </p>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && !error && filteredUsers.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+            <div className="text-sm text-gray-700">
+              Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
+              <span className="font-semibold">
+                {Math.min(endIndex, filteredUsers.length)}
+              </span>{" "}
+              of <span className="font-semibold">{filteredUsers.length}</span>{" "}
+              users
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(pageNum)}
+                      className="w-10"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
+            </div>
           </div>
         )}
       </Card>
