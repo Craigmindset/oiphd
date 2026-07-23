@@ -9,7 +9,7 @@ const slides = [
   {
     image: "/slide1.jpg",
     header: " THE MASTER JESUS STILL HEALS TODAY.",
-    subheader: "Experience His touch todays",
+    subheader: "Experience His touch today",
     description: "",
   },
   {
