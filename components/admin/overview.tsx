@@ -32,55 +32,28 @@ export function Overview() {
       setLoading(true);
       setError(null);
 
-      // Fetch total users
-      const { count, error: userError } = await supabase
-        .from("user_profiles")
-        .select("id", { count: "exact", head: true })
-        .eq("role", "user");
+      try {
+        // Fetch admin statistics from API
+        const response = await fetch("/api/admin/stats");
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch statistics");
+        }
 
-      if (userError) {
-        setError(userError.message);
+        const data = await response.json();
+        
+        setTotalUsers(data.totalUsers);
+        setModuleCompletion({
+          module1: data.moduleCompletion.module1,
+          module2: data.moduleCompletion.module2,
+          module3: data.moduleCompletion.module3,
+        });
+      } catch (err: any) {
+        setError(err.message || "Failed to load data");
         setTotalUsers(null);
-      } else {
-        setTotalUsers(count ?? 0);
+      } finally {
+        setLoading(false);
       }
-
-      // Fetch module completion data from module_progress table
-      const { data: progressData, error: progressError } = await supabase
-        .from("module_progress")
-        .select("user_id, module_id, completed")
-        .eq("completed", true)
-        .in("module_id", ["module1", "module2", "module3"]);
-
-      if (progressError) {
-        console.error("Error fetching module completion:", progressError);
-      } else if (progressData) {
-        // Count unique users who completed each module
-        const module1Users = new Set(
-          progressData
-            .filter((p) => p.module_id === "module1")
-            .map((p) => p.user_id)
-        );
-        const module2Users = new Set(
-          progressData
-            .filter((p) => p.module_id === "module2")
-            .map((p) => p.user_id)
-        );
-        const module3Users = new Set(
-          progressData
-            .filter((p) => p.module_id === "module3")
-            .map((p) => p.user_id)
-        );
-
-        const completion = {
-          module1: module1Users.size,
-          module2: module2Users.size,
-          module3: module3Users.size,
-        };
-        setModuleCompletion(completion);
-      }
-
-      setLoading(false);
     };
 
     fetchData();

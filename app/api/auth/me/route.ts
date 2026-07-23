@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { adminSupabase } from "../_supabase";
+import { adminSupabase, authSupabase } from "../_supabase";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     // Get user from Supabase using the access token
     const { data: userData, error: userError } =
-      await adminSupabase.auth.getUser(token);
+      await authSupabase.auth.getUser(token);
     if (userError || !userData.user) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }

@@ -107,62 +107,53 @@ export default function SignupPage() {
     setIsSubmitting(true);
     setErrorMessage("");
     setSuccessMessage("");
-    // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-    });
 
-    if (authError) {
-      setErrorMessage(authError.message || "Signup failed. Please try again.");
-      setIsSubmitting(false);
-      return false;
-    }
+    try {
+      // Call the API endpoint to create user and profile
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          gender: formData.gender,
+          phone: formData.phone,
+          address: formData.address,
+          country: formData.country,
+          occupation: formData.occupation,
+          expectations: formData.expectations,
+          status: formData.status,
+          registeringForSomeone:
+            formData.registeringForSomeone === true
+              ? "yes"
+              : formData.registeringForSomeone === false
+              ? "no"
+              : null,
+        }),
+      });
 
-    // 2. Insert profile data (after successful signup)
-    const user = authData.user;
-    if (user) {
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .insert([
-          {
-            id: user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            gender: formData.gender,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address,
-            country: formData.country,
-            occupation: formData.occupation,
-            expectations: formData.expectations,
-            status: formData.status,
-            registering_for_someone:
-              formData.registeringForSomeone === true
-                ? "yes"
-                : formData.registeringForSomeone === false
-                ? "no"
-                : null,
-            // health_image_url: ... (handle upload separately if needed)
-          },
-        ]);
-      if (profileError) {
-        setErrorMessage(
-          profileError.message || "Profile save failed. Please try again."
-        );
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(result.error || "Signup failed. Please try again.");
         setIsSubmitting(false);
         return false;
       }
-      setSuccessMessage("Registration successful! please check your email.");
+
+      setSuccessMessage(result.message || "Registration successful! You can now login.");
       setTimeout(() => {
         router.push("/login");
       }, 2000);
       setIsSubmitting(false);
       return true;
+    } catch (error) {
+      console.error("Signup error:", error);
+      setErrorMessage("Signup failed. Please try again.");
+      setIsSubmitting(false);
+      return false;
     }
-    setErrorMessage("Signup failed. Please try again.");
-    setIsSubmitting(false);
-    return false;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

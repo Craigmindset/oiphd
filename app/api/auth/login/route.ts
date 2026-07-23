@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { adminSupabase } from "../_supabase";
+import { adminSupabase, authSupabase } from "../_supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,12 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Authenticate with Supabase
+    // Authenticate with Supabase (use authSupabase with anon key)
+    console.log(`[LOGIN] Attempting sign in with email: ${email}`);
+    
     const { data: signInData, error: signInError } =
-      await adminSupabase.auth.signInWithPassword({
+      await authSupabase.auth.signInWithPassword({
         email,
         password,
       });
+    
+    console.log(`[LOGIN] Sign in result - Success: ${!!signInData.session}, User ID: ${signInData.user?.id}`);
+    
     if (signInError || !signInData.session) {
       console.error("Supabase sign in error:", signInError);
       return NextResponse.json(
@@ -28,13 +33,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch user profile (role, etc.)
-    const { data: profile, error: profileError } = await adminSupabase
+    console.log(`[LOGIN] Fetching profile for user ID: ${signInData.user.id}`);
+    
+    const { data: profile, error: profileError, count } = await adminSupabase
       .from("user_profiles")
-      .select("id, email, first_name, last_name, role")
+      .select("id, email, first_name, last_name, role", { count: 'exact' })
       .eq("id", signInData.user.id)
       .single();
+    
+    console.log(`[LOGIN] Profile query result - Count: ${count}, Error: ${profileError?.code}, Data: ${profile ? 'Found' : 'Not found'}`);
+    
     if (profileError || !profile) {
       console.error("Profile fetch error:", profileError);
+      console.error("User ID that failed:", signInData.user.id);
+      
+      // Try to find any profile with this email for debugging
+      const { data: debugProfiles } = await adminSupabase
+        .from("user_profiles")
+        .select("id, email")
+        .eq("email", signInData.user.email);
+      
+      console.error("Profiles with this email:", debugProfiles);
+      
       return NextResponse.json(
         { error: profileError?.message || "User profile not found" },
         { status: 401 }

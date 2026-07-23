@@ -114,49 +114,18 @@ export function Settings() {
   const fetchSupportRequests = async () => {
     setLoading(true);
     try {
-      // First, fetch support requests
-      const { data: requestsData, error: requestsError } = await supabase
-        .from("support_requests")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (requestsError) {
-        console.error("Supabase error:", requestsError);
-        alert(`Error fetching support requests: ${requestsError.message}`);
-        throw requestsError;
+      const response = await fetch("/api/admin/support-requests");
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch support requests");
       }
 
-      // Then, fetch user profiles for each request
-      if (requestsData && requestsData.length > 0) {
-        const userIds = [...new Set(requestsData.map((r) => r.user_id))];
-
-        const { data: profilesData, error: profilesError } = await supabase
-          .from("user_profiles")
-          .select("id, first_name, last_name, email")
-          .in("id", userIds);
-
-        if (profilesError) {
-          console.error("Error fetching profiles:", profilesError);
-        }
-
-        // Merge the data
-        const mergedData = requestsData.map((request) => ({
-          ...request,
-          user_profiles:
-            profilesData?.find((p) => p.id === request.user_id) || null,
-        }));
-
-        console.log("Fetched support requests:", mergedData);
-        setRequests(mergedData);
-      } else {
-        console.log("No support requests found");
-        setRequests([]);
-      }
+      const data = await response.json();
+      console.log("Fetched support requests:", data.requests);
+      setRequests(data.requests || []);
     } catch (error: any) {
       console.error("Error fetching support requests:", error);
-      alert(
-        `Failed to load support requests: ${error?.message || "Unknown error"}`
-      );
+      alert(`Failed to load support requests: ${error?.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }
@@ -165,12 +134,15 @@ export function Settings() {
   const updateRequestStatus = async (requestId: string, newStatus: string) => {
     setUpdating(true);
     try {
-      const { error } = await supabase
-        .from("support_requests")
-        .update({ status: newStatus })
-        .eq("id", requestId);
+      const response = await fetch("/api/admin/support-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId, status: newStatus }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
 
       // Update local state
       setRequests(
@@ -195,17 +167,19 @@ export function Settings() {
 
     setUpdating(true);
     try {
-      // Update the support request with admin response
-      const { error } = await supabase
-        .from("support_requests")
-        .update({
+      const response = await fetch("/api/admin/support-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedRequest.id,
           admin_response: adminResponse,
-          responded_at: new Date().toISOString(),
           status: "resolved",
-        })
-        .eq("id", selectedRequest.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error("Failed to send response");
+      }
 
       // Update local state
       setRequests(

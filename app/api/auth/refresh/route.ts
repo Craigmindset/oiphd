@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { adminSupabase } from "../_supabase";
+import { adminSupabase, authSupabase } from "../_supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Get user from Supabase using the new access token
     const { data: userData, error: userError } =
-      await adminSupabase.auth.getUser(access_token);
+      await authSupabase.auth.getUser(access_token);
 
     if (userError || !userData.user) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });

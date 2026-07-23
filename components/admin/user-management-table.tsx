@@ -46,50 +46,25 @@ export function UserManagementTable() {
     const fetchUsersAndProgress = async () => {
       setLoading(true);
       setError(null);
-      // Fetch users
-      const { data: usersData, error: usersError } = await supabase
-        .from("user_profiles")
-        .select()
-        .eq("role", "user");
-      if (usersError) {
-        setError(usersError.message);
-        setLoading(false);
-        return;
-      }
-      setUsers(usersData || []);
-
-      // Fetch module progress for all users
-      const { data: progressData, error: progressError } = await supabase
-        .from("module_progress")
-        .select("user_id, module_id, completed");
-      if (progressError) {
-        setError(progressError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Calculate progress percentage for each user
-      const MODULES = [
-        "module1",
-        "module2",
-        "module3",
-        "prayers",
-        "transformation",
-      ];
-      const userProgress: Record<string, number> = {};
-      if (progressData) {
-        for (const user of usersData || []) {
-          const completed = progressData.filter(
-            (row) => row.user_id === user.id && row.completed
-          ).length;
-          userProgress[user.id] = Math.round(
-            (completed / MODULES.length) * 100
-          );
+      
+      try {
+        // Fetch users and progress from API
+        const response = await fetch("/api/admin/users");
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
         }
+
+        const data = await response.json();
+        setUsers(data.users || []);
+        setProgressMap(data.progressMap || {});
+      } catch (err: any) {
+        setError(err.message || "Failed to load users");
+      } finally {
+        setLoading(false);
       }
-      setProgressMap(userProgress);
-      setLoading(false);
     };
+    
     fetchUsersAndProgress();
   }, []);
 
