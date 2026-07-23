@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   // Only protect /admin and /dashboard routes
   if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard")) {
